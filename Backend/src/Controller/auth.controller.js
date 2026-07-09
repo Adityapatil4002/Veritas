@@ -118,15 +118,24 @@ async function logoutUserController(req, res) {
  * @access private
  */
 async function getMeController(req, res) {
-    const user = await userModel.findById(req.res.id)
+  try {
+    const user = await userModel.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
     res.status(200).json({
-        message: "user details fetched successfully",
-        user: {
-            id: user._id,
-            username: user.username,
-            email: user.email
-        }
-    })
+      message: "user details fetched successfully",
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
 }
 
 module.exports = {
