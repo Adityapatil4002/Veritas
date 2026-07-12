@@ -4,7 +4,8 @@ import { useNavigate,Link } from 'react-router'
 
 const Register = () => {
 
-    const navigate = useNavigate()
+  const navigate = useNavigate()
+  
 
     const handleSubmit = (e) => {
       e.preventDefault();
