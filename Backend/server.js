@@ -1,8 +1,7 @@
 require("dotenv").config()
 const app = require("./src/app")
 const connectToDB = require("./src/config/database")
-const invokeGeminiAi = require("./src/Services/ai.services")
-
+const {resume, selfDescription, jobDescription} = require("./src/Services")
 
 connectToDB();
 invokeGeminiAi()
