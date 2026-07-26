@@ -1,0 +1,18 @@
+const express = require("express")
+const authMiddleware = require("../Middlewares/auth.middleware")
+const interviewController = require("../Controller/interview.controller")
+const upload = require("../Middlewares/file.middleware")
+
+const interviewRouter = express.Router()
+
+/**
+ * @route POST/api/interview/
+ * @description generate a new interview report on the basis of user self desciption, resume pdf and job description
+ * @access private
+ */
+
+interviewRouter.post("/", authMiddleware.authUser, upload.single("resume"), interviewController.generateInterviewReportController)
+
+
+
+module.exports = interviewRouter

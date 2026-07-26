@@ -1,97 +1,130 @@
-const mongoose = require('mongoose')
+const mongoose = require("mongoose");
 
 /**
- * - job description schema
- * - resume text
- * - self description
- * 
- * - match score
- * 
- * - Technical questions
- * - Behavioural questions
- * - skill gaps
- * - preparations plan 
- */
 
-const technicalQuestionsSchema = new mongoose.Schema({
+* Interview Report Schema
+  */
+
+const technicalQuestionsSchema = new mongoose.Schema(
+  {
     question: {
-        type: String,
-        required: [true, "Technical question is required"]
+      type: String,
+      required: [true, "Technical question is required"],
     },
-    intentions: {
-        type: String,
-        required: [true, "Answer is required"]
-    }
-}, {
-    _id:false
-})
+    intention: {
+      type: String,
+      required: [true, "Intention is required"],
+    },
+    answer: {
+      type: String,
+      required: [true, "Answer is required"],
+    },
+  },
+  {
+    _id: false,
+  },
+);
 
-const BehaviouralQustionSchema = new mongoose.Schema({
+const behaviouralQuestionsSchema = new mongoose.Schema(
+  {
     question: {
-        type: String,
-        required: [true, "Technical question is required"]
+      type: String,
+      required: [true, "Behavioural question is required"],
     },
-    intentions: {
-        type: String,
-        required: [true, "Answer is required"]
-    }
-}, {
-    _id:false
-})
-
-const skillGapsSchema = new mongoose.Schema({
-    question: {
-        type: String,
-        required: [true, "Technical question is required"]
+    intention: {
+      type: String,
+      required: [true, "Intention is required"],
     },
-    intentions: {
-        type: String,
-        required: [true, "Answer is required"]
-    }
-}, {
-    _id:false
-}
-)
+    answer: {
+      type: String,
+      required: [true, "Answer is required"],
+    },
+  },
+  {
+    _id: false,
+  },
+);
 
-const preparationsPlanSchema = new mongoose.Schema({
+const skillGapsSchema = new mongoose.Schema(
+  {
+    skill: {
+      type: String,
+      required: true,
+    },
+    severity: {
+      type: String,
+      enum: ["low", "medium", "high"],
+      required: true,
+    },
+  },
+  {
+    _id: false,
+  },
+);
+
+const preparationPlanSchema = new mongoose.Schema(
+  {
     day: {
-        type: String,
-        required: [ true, "Day is required"]
+      type: Number,
+      required: true,
     },
     focus: {
-        type: String,
-        required: [true, "Focus is required"]
+      type: String,
+      required: true,
     },
-    tasks: {
+    tasks: [
+      {
         type: String,
-        required: [true, "Task is required"]
-    }
-})
+      },
+    ],
+  },
+  {
+    _id: false,
+  },
+);
 
-const interviewReportSchema = new mongoose.Schema({
+const interviewReportSchema = new mongoose.Schema(
+  {
     jobDescription: {
-        type: String,
-        required: [true, "job description is required"]
+      type: String,
+      required: [true, "Job description is required"],
     },
-    resume: {
-        type: String,
-    },
-    selfDescription: {
-        type: String,
-    },
-    matchScore: {
-        type: Number,
-        min: 0,
-        max: 100,
-    },
-    technicalQuestions: [technicalQuestionsSchema],
-    BehaviouralQustionSchema: [BehaviouralQustionSchema],
-    skillGapsSchema: [skillGapsSchema],
-    preparationsPlanSchema: [preparationsPlanSchema]
-}, {
-    timestamps: true
-})
 
-const interviewReportModel = mongoose.model("IntervewReport", interviewReportSchema);
+    resume: {
+      type: String,
+    },
+
+    selfDescription: {
+      type: String,
+    },
+
+    matchScore: {
+      type: Number,
+      min: 0,
+      max: 100,
+    },
+
+    technicalQuestions: [technicalQuestionsSchema],
+
+    behaviouralQuestions: [behaviouralQuestionsSchema],
+
+    skillGaps: [skillGapsSchema],
+
+    preparationPlan: [preparationPlanSchema],
+
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "users",
+    },
+  },
+  {
+    timestamps: true,
+  },
+);
+
+const interviewReportModel = mongoose.model(
+  "InterviewReport",
+  interviewReportSchema,
+);
 
 module.exports = interviewReportModel;
