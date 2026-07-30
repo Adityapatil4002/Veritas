@@ -6,16 +6,28 @@ import Home from "./features/interview/pages/home";
 
 
 export const router = createBrowserRouter([
-    {
-        path: "/Login",
-        element:<Login/>
-    },
-    {
-        path: "/Register",
-        element: <Register/>
-    },
-    {
-        path: "/",
-        element: <Protected><Home/></Protected>
-    }
-])
+  {
+    path: "/Login",
+    element: <Login />,
+  },
+  {
+    path: "/Register",
+    element: <Register />,
+  },
+  {
+    path: "/",
+    element: (
+      <Protected>
+        <Home />
+      </Protected>
+    ),
+  },
+  {
+    path: "/interview/:interviewId",
+    element: (
+      <Protected>
+        <Home />
+      </Protected>
+    ),
+  },
+]);
