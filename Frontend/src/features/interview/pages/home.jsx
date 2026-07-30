@@ -4,7 +4,8 @@ const home = () => {
     return (
       <main className="home">
         <div className="interview-input-group">
-          <div className="left">
+                <div className="left">
+                    <label htmlFor="jobDescription">Job Descritpion</label>
             <textarea
               name="jobDescription"
               placeholder="Job Description"
@@ -21,16 +22,13 @@ const home = () => {
               <label classname="file-label" htmlFor="resume">
                 Upload resume
               </label>
-              <input type="file" id="resume" name="resume" accept=".pdf" />
+              <input hidden type="file" id="resume" name="resume" accept=".pdf" />
             </div>
             <div className="input-group">
               <label htmlFor="selfDescription">Self Description</label>
-              <input
-                type="file"
-                id="selfDescription"
-                name="selfDescription"
-                accept=".pdf"
-              />
+              <textarea name="selfDescription" id="selfDescription"></textarea>
+            </div>
+            <div className="button-group">
               <button className="button primary-button">Generate Interview</button>
             </div>
           </div>
