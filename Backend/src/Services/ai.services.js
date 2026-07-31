@@ -52,7 +52,8 @@ const interviewReportSchema = z.object({
         focus: z.string().describe("The main focus of this day in the preparation plan, e.g data structure, system design, full stack development, etc"),
         tasks: z.array(z.string()).describe("List of tasks to be done on this day to follow the preparation plan, e.g practice leetcode pattern wise question with their patterns, read system design articles and case studies, etc")
 
-    })).describe("A day wise preparation plan for the candidate to prepare for the interview, with focus and tasks for each day")
+    })).describe("A day wise preparation plan for the candidate to prepare for the interview, with focus and tasks for each day"),
+    title: z.string().describe("The title of the job which the interview report is generated "),
 });
 
 
