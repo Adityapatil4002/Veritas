@@ -1,7 +1,35 @@
-import React from "react";
+import React, {useState, useRef} from "react";
 import "../style/home.scss";
+import {useInterview} from "./interview.context.jsx"
+import { useNavigate } from "react-router";
 
 const Home = () => {
+
+  const { loading, generateReport } = useInterview()
+  const [jobDescription, setJobDescription] = useState("")
+  const [selfDescription, setSelfDescription] = useState("")
+  //const [resume, setResume] = useState(null)
+  const resumeInputRef = useRef()
+  const navigate = useNavigate()
+
+
+  const handleGenerateReport = async() => {
+    const resumeFile = resumeInputRef.current.files[0]
+    const data = await generateReport({ jobDescription, selfDescription, resumeFile })
+    navigate(`/interview/${data.id}`)
+  }
+
+  if (loading) {
+    return (
+      <main className="loading-screen">
+        <h1>Generating your interview plan...</h1>
+      </main>
+    )
+  }
+
+  
+
+
   return (
     <main className="home">
       <div className="home-header">
@@ -30,6 +58,9 @@ const Home = () => {
 
             <div className="job-description-wrapper">
               <textarea
+                onChange={(e) => {
+                  setJobDescription(e.target.value);
+                }}
                 id="jobDescription"
                 name="jobDescription"
                 maxLength={5000}
@@ -70,6 +101,7 @@ design..."`}
               </label>
 
               <input
+                ref={resumeInputRef}
                 hidden
                 type="file"
                 id="resume"
@@ -90,6 +122,9 @@ design..."`}
               <label htmlFor="selfDescription">Quick Self-Description</label>
 
               <textarea
+                onChange={(e) => {
+                  setSelfDescription(e.target.value);
+                }}
                 name="selfDescription"
                 id="selfDescription"
                 placeholder="Briefly describe your experience, key skills, and years of experience if you don't have a resume handy..."
@@ -113,7 +148,9 @@ design..."`}
         <div className="card-footer">
           <p>AI-Powered Strategy Generation · Approx 30s</p>
 
-          <button className="generate-button" type="button">
+          <button
+            onClick = {handleGenerateReport}
+            className="generate-button" type="button">
             <span>★</span>
             Generate My Interview Strategy
           </button>

@@ -1,457 +1,282 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../style/interview.scss";
+import { useInterview } from "../hooks/useInterview.js";
+import { useNavigate, useParams } from "react-router";
 
-const Interview = ({ interviewData }) => {
-  const [activeSection, setActiveSection] = useState("technical");
-  const [openQuestion, setOpenQuestion] = useState(null);
+const NAV_ITEMS = [
+  {
+    id: "technical",
+    label: "Technical Questions",
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <polyline points="16 18 22 12 16 6" />
+        <polyline points="8 6 2 12 8 18" />
+      </svg>
+    ),
+  },
+  {
+    id: "behavioral",
+    label: "Behavioral Questions",
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+      </svg>
+    ),
+  },
+  {
+    id: "roadmap",
+    label: "Road Map",
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <polygon points="3 11 22 2 13 21 11 13 3 11" />
+      </svg>
+    ),
+  },
+];
 
-  /*
-    Use the prop when your API data is available.
-
-    Example:
-    <Interview interviewData={data} />
-  */
-
-  const data = interviewData || {
-    matchScore: 65,
-
-    technicalQuestions: [
-      {
-        question:
-          "How do you handle microservices orchestration in a large-scale system?",
-        intention: "Test architectural knowledge beyond CRUD applications.",
-        answer:
-          "I would discuss service discovery, API gateways, and orchestration tools like Kubernetes or event-driven patterns using message brokers like RabbitMQ or Kafka.",
-      },
-      {
-        question:
-          "Explain the difference between optimistic and pessimistic locking in databases.",
-        intention:
-          "Evaluate depth in database management for high-concurrency environments.",
-        answer:
-          "Optimistic locking checks for version changes before commit; pessimistic locking locks the row at the start of the transaction.",
-      },
-      {
-        question:
-          "How would you optimize a React application that is experiencing re-render performance issues?",
-        intention:
-          "Check proficiency in React internals and performance profiling.",
-        answer:
-          "Use React.memo, useMemo, useCallback, code splitting with Suspense, and virtualization for long lists.",
-      },
-      {
-        question:
-          "What are the trade-offs of choosing NoSQL over SQL in a mission-critical system?",
-        intention:
-          "Assess understanding of database architecture trade-offs (ACID vs BASE).",
-        answer:
-          "SQL offers consistency and complex joins; NoSQL provides scalability and flexibility for unstructured data.",
-      },
-      {
-        question: "How do you ensure security in a Node.js API?",
-        intention: "Check security best practices.",
-        answer:
-          "Use helmet for headers, rate limiting, JWT validation, sanitize inputs, and prevent XSS/CSRF.",
-      },
-      {
-        question:
-          "Explain the concept of 'Event Loop' in Node.js and its impact on performance.",
-        intention: "Check low-level understanding of Node.js.",
-        answer:
-          "It allows non-blocking I/O operations by offloading tasks to the system kernel, maintaining a single thread for execution.",
-      },
-      {
-        question: "How do you implement CI/CD for a full-stack application?",
-        intention: "Evaluate DevOps mindset.",
-        answer:
-          "Automate testing via Jenkins/GitHub Actions, build Docker images, and deploy via Vercel or cloud providers using blue-green deployments.",
-      },
-      {
-        question:
-          "What is the 'Decorator' pattern and how is it used in TypeScript?",
-        intention: "Check language-specific design pattern knowledge.",
-        answer:
-          "Decorators provide a way to add annotations and metadata to classes and methods, commonly used in frameworks like NestJS.",
-      },
-      {
-        question:
-          "How do you handle state management across complex applications?",
-        intention: "Understand application-level architecture.",
-        answer:
-          "Discuss use of Context API for simple, Redux Toolkit or Zustand for complex, global state.",
-      },
-      {
-        question:
-          "What are the complexities of deploying machine learning models to production?",
-        intention:
-          "Bridge the gap between data science and production engineering.",
-        answer:
-          "Model drift, latency, monitoring, hardware resource constraints, and versioning models.",
-      },
-    ],
-
-    behaviouralQuestions: [
-      {
-        question:
-          "Describe a time you had to resolve a conflict within your technical team.",
-        intention: "Evaluate soft skills and collaborative spirit.",
-        answer:
-          "Focus on active listening, objective data-driven decision-making, and prioritizing project goals.",
-      },
-      {
-        question:
-          "How do you manage technical debt when working under tight deadlines?",
-        intention: "Check ability to balance business vs engineering needs.",
-        answer:
-          "Acknowledge the need for shortcuts but emphasize documenting and scheduling refactoring cycles.",
-      },
-      {
-        question:
-          "Tell me about a project where you failed or faced a major setback.",
-        intention: "Assess growth mindset and resilience.",
-        answer:
-          "Highlight lessons learned, root cause analysis, and preventive measures implemented.",
-      },
-      {
-        question: "How do you stay up-to-date with new technologies?",
-        intention: "Evaluate intellectual curiosity.",
-        answer:
-          "Discuss newsletters, open-source contribution, technical blogs, and building side projects.",
-      },
-      {
-        question:
-          "Why are you looking for a Senior role at this stage of your career?",
-        intention: "Test professional awareness vs experience level.",
-        answer:
-          "Focus on desire for higher accountability, architectural influence, and mentorship.",
-      },
-    ],
-
-    skillGaps: [
-      {
-        skill: "System Design & Architecture",
-        severity: "high",
-      },
-      {
-        skill: "Production Monitoring & Observability",
-        severity: "high",
-      },
-      {
-        skill: "Distributed Systems Principles",
-        severity: "medium",
-      },
-      {
-        skill: "Advanced DevOps/Kubernetes",
-        severity: "medium",
-      },
-      {
-        skill: "Leadership & Mentorship Experience",
-        severity: "high",
-      },
-    ],
-
-    preparationPlan: [
-      {
-        day: 1,
-        focus: "System Design Fundamentals",
-        tasks: [
-          "Study load balancing, caching strategies, and database sharding.",
-        ],
-      },
-      {
-        day: 2,
-        focus: "Scalability Patterns",
-        tasks: [
-          "Read about microservices communication, message queues, and event-driven design.",
-        ],
-      },
-      {
-        day: 3,
-        focus: "Backend Performance",
-        tasks: [
-          "Deep dive into Node.js event loop optimizations and memory management.",
-        ],
-      },
-      {
-        day: 4,
-        focus: "Advanced Database Theory",
-        tasks: [
-          "Master ACID/BASE properties and SQL performance indexing strategies.",
-        ],
-      },
-      {
-        day: 5,
-        focus: "Security Best Practices",
-        tasks: [
-          "Study OWASP Top 10 and implementation of secure authentication flows.",
-        ],
-      },
-      {
-        day: 6,
-        focus: "CI/CD & DevOps",
-        tasks: [
-          "Review Docker fundamentals and design a sample CI/CD pipeline in YAML.",
-        ],
-      },
-      {
-        day: 7,
-        focus: "System Design Practice",
-        tasks: [
-          "Attempt to design a URL shortener or a notification system (End-to-End).",
-        ],
-      },
-      {
-        day: 8,
-        focus: "Advanced React Patterns",
-        tasks: [
-          "Review complex state management libraries (Redux/Zustand) and Server Components.",
-        ],
-      },
-      {
-        day: 9,
-        focus: "Testing Strategies",
-        tasks: [
-          "Practice integration testing with Jest, Cypress, or Playwright.",
-        ],
-      },
-      {
-        day: 10,
-        focus: "Behavioural Preparation",
-        tasks: [
-          "Draft STAR method answers for common leadership and conflict scenarios.",
-        ],
-      },
-      {
-        day: 11,
-        focus: "Monitoring & SRE",
-        tasks: [
-          "Study logs, metrics, tracing, and tools like Prometheus/Grafana.",
-        ],
-      },
-      {
-        day: 12,
-        focus: "Code Quality & Refactoring",
-        tasks: ["Review clean code principles, SOLID, and design patterns."],
-      },
-      {
-        day: 13,
-        focus: "Mock Interviews",
-        tasks: [
-          "Record yourself solving two system design problems and review them.",
-        ],
-      },
-      {
-        day: 14,
-        focus: "Final Review",
-        tasks: [
-          "Review personal project architecture and identify potential performance bottlenecks.",
-        ],
-      },
-    ],
-  };
-
-  const sections = {
-    technical: {
-      label: "Technical Questions",
-      title: "Technical Questions",
-      subtitle:
-        "Practice the technical concepts most likely to come up in your interview.",
-    },
-
-    behavioural: {
-      label: "Behavioral Questions",
-      title: "Behavioral Questions",
-      subtitle:
-        "Prepare structured responses for communication, leadership, and teamwork scenarios.",
-    },
-
-    roadmap: {
-      label: "Road Map",
-      title: "14-Day Preparation Road Map",
-      subtitle:
-        "Follow this focused preparation plan to strengthen your interview readiness.",
-    },
-  };
-
-  const toggleQuestion = (index) => {
-    setOpenQuestion((current) => (current === index ? null : index));
-  };
-
-  const renderQuestions = (questions) => (
-    <div className="questions-list">
-      {questions?.map((item, index) => {
-        const isOpen = openQuestion === index;
-
-        return (
-          <article
-            className={`question-card ${isOpen ? "open" : ""}`}
-            key={`${item.question}-${index}`}
+// ── Sub-components ────────────────────────────────────────────────────────────
+const QuestionCard = ({ item, index }) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="q-card">
+      <div className="q-card__header" onClick={() => setOpen((o) => !o)}>
+        <span className="q-card__index">Q{index + 1}</span>
+        <p className="q-card__question">{item.question}</p>
+        <span
+          className={`q-card__chevron ${open ? "q-card__chevron--open" : ""}`}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           >
-            <button
-              className="question-header"
-              type="button"
-              onClick={() => toggleQuestion(index)}
-            >
-              <div className="question-number">
-                {String(index + 1).padStart(2, "0")}
-              </div>
-
-              <h3>{item.question}</h3>
-
-              <span className="question-toggle">{isOpen ? "−" : "+"}</span>
-            </button>
-
-            {isOpen && (
-              <div className="question-details">
-                <div className="question-info intention">
-                  <span className="detail-label">Why they ask this</span>
-                  <p>{item.intention}</p>
-                </div>
-
-                <div className="question-info answer">
-                  <span className="detail-label">Suggested approach</span>
-                  <p>{item.answer}</p>
-                </div>
-              </div>
-            )}
-          </article>
-        );
-      })}
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </span>
+      </div>
+      {open && (
+        <div className="q-card__body">
+          <div className="q-card__section">
+            <span className="q-card__tag q-card__tag--intention">
+              Intention
+            </span>
+            <p>{item.intention}</p>
+          </div>
+          <div className="q-card__section">
+            <span className="q-card__tag q-card__tag--answer">
+              Model Answer
+            </span>
+            <p>{item.answer}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
+};
 
-  const renderRoadMap = () => (
-    <div className="roadmap-list">
-      {data.preparationPlan?.map((item) => (
-        <article className="roadmap-card" key={item.day}>
-          <div className="roadmap-day">
-            <span>DAY</span>
-            <strong>{String(item.day).padStart(2, "0")}</strong>
-          </div>
-
-          <div className="roadmap-content">
-            <h3>{item.focus}</h3>
-
-            <ul>
-              {item.tasks?.map((task, index) => (
-                <li key={`${item.day}-${index}`}>{task}</li>
-              ))}
-            </ul>
-          </div>
-        </article>
+const RoadMapDay = ({ day }) => (
+  <div className="roadmap-day">
+    <div className="roadmap-day__header">
+      <span className="roadmap-day__badge">Day {day.day}</span>
+      <h3 className="roadmap-day__focus">{day.focus}</h3>
+    </div>
+    <ul className="roadmap-day__tasks">
+      {day.tasks.map((task, i) => (
+        <li key={i}>
+          <span className="roadmap-day__bullet" />
+          {task}
+        </li>
       ))}
-    </div>
-  );
+    </ul>
+  </div>
+);
 
-  const renderContent = () => {
-    switch (activeSection) {
-      case "technical":
-        return renderQuestions(data.technicalQuestions);
+// ── Main Component ────────────────────────────────────────────────────────────
+const Interview = () => {
+  const [activeNav, setActiveNav] = useState("technical");
+  const { report, getReportById, loading, getResumePdf } = useInterview();
+  const { interviewId } = useParams();
 
-      case "behavioural":
-        return renderQuestions(data.behaviouralQuestions);
-
-      case "roadmap":
-        return renderRoadMap();
-
-      default:
-        return null;
+  useEffect(() => {
+    if (interviewId) {
+      getReportById(interviewId);
     }
-  };
+  }, [interviewId]);
 
-  const currentSection = sections[activeSection];
+  if (loading || !report) {
+    return (
+      <main className="loading-screen">
+        <h1>Loading your interview plan...</h1>
+      </main>
+    );
+  }
+
+  const scoreColor =
+    report.matchScore >= 80
+      ? "score--high"
+      : report.matchScore >= 60
+        ? "score--mid"
+        : "score--low";
 
   return (
-    <main className="interview-page">
+    <div className="interview-page">
       <div className="interview-layout">
-        {/* LEFT NAVIGATION */}
-        <aside className="interview-sidebar">
-          <div className="sidebar-heading">
-            <span className="sidebar-heading-icon">✦</span>
-            <span>Interview Plan</span>
-          </div>
-
-          <nav className="interview-nav">
-            {Object.entries(sections).map(([key, section]) => (
+        {/* ── Left Nav ── */}
+        <nav className="interview-nav">
+          <div className="nav-content">
+            <p className="interview-nav__label">Sections</p>
+            {NAV_ITEMS.map((item) => (
               <button
-                type="button"
-                key={key}
-                className={activeSection === key ? "active" : ""}
-                onClick={() => {
-                  setActiveSection(key);
-                  setOpenQuestion(null);
-                }}
+                key={item.id}
+                className={`interview-nav__item ${activeNav === item.id ? "interview-nav__item--active" : ""}`}
+                onClick={() => setActiveNav(item.id)}
               >
-                <span className="nav-dot"></span>
-                {section.label}
+                <span className="interview-nav__icon">{item.icon}</span>
+                {item.label}
               </button>
             ))}
-          </nav>
-
-          <div className="sidebar-score">
-            <div className="score-heading">
-              <span>Profile Match</span>
-              <strong>{data.matchScore}%</strong>
-            </div>
-
-            <div className="score-track">
-              <span style={{ width: `${data.matchScore}%` }}></span>
-            </div>
-
-            <p>
-              Your profile currently matches approximately {data.matchScore}% of
-              the target role.
-            </p>
           </div>
-        </aside>
+          <button
+            onClick={() => {
+              getResumePdf(interviewId);
+            }}
+            className="button primary-button"
+          >
+            <svg
+              height={"0.8rem"}
+              style={{ marginRight: "0.8rem" }}
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path d="M10.6144 17.7956 11.492 15.7854C12.2731 13.9966 13.6789 12.5726 15.4325 11.7942L17.8482 10.7219C18.6162 10.381 18.6162 9.26368 17.8482 8.92277L15.5079 7.88394C13.7092 7.08552 12.2782 5.60881 11.5105 3.75894L10.6215 1.61673C10.2916.821765 9.19319.821767 8.8633 1.61673L7.97427 3.75892C7.20657 5.60881 5.77553 7.08552 3.97685 7.88394L1.63658 8.92277C.868537 9.26368.868536 10.381 1.63658 10.7219L4.0523 11.7942C5.80589 12.5726 7.21171 13.9966 7.99275 15.7854L8.8704 17.7956C9.20776 18.5682 10.277 18.5682 10.6144 17.7956ZM19.4014 22.6899 19.6482 22.1242C20.0882 21.1156 20.8807 20.3125 21.8695 19.8732L22.6299 19.5353C23.0412 19.3526 23.0412 18.7549 22.6299 18.5722L21.9121 18.2532C20.8978 17.8026 20.0911 16.9698 19.6586 15.9269L19.4052 15.3156C19.2285 14.8896 18.6395 14.8896 18.4628 15.3156L18.2094 15.9269C17.777 16.9698 16.9703 17.8026 15.956 18.2532L15.2381 18.5722C14.8269 18.7549 14.8269 19.3526 15.2381 19.5353L15.9985 19.8732C16.9874 20.3125 17.7798 21.1156 18.2198 22.1242L18.4667 22.6899C18.6473 23.104 19.2207 23.104 19.4014 22.6899Z"></path>
+            </svg>
+            Download Resume
+          </button>
+        </nav>
 
-        {/* MAIN CONTENT */}
-        <section className="interview-main">
-          <header className="content-header">
-            <span className="eyebrow">PERSONALIZED STRATEGY</span>
+        <div className="interview-divider" />
 
-            <h1>{currentSection.title}</h1>
-
-            <p>{currentSection.subtitle}</p>
-          </header>
-
-          <div className="content-body">{renderContent()}</div>
-        </section>
-
-        {/* RIGHT SKILL GAPS */}
-        <aside className="skill-sidebar">
-          <div className="skill-header">
-            <span className="skill-icon">⚡</span>
-
-            <div>
-              <h2>Skill Gaps</h2>
-              <p>Areas to prioritize</p>
-            </div>
-          </div>
-
-          <div className="skill-list">
-            {data.skillGaps?.map((item, index) => (
-              <div
-                className={`skill-item ${item.severity}`}
-                key={`${item.skill}-${index}`}
-              >
-                <span className="skill-name">{item.skill}</span>
-                <span className="severity">{item.severity}</span>
+        {/* ── Center Content ── */}
+        <main className="interview-content">
+          {activeNav === "technical" && (
+            <section>
+              <div className="content-header">
+                <h2>Technical Questions</h2>
+                <span className="content-header__count">
+                  {report.technicalQuestions.length} questions
+                </span>
               </div>
-            ))}
+              <div className="q-list">
+                {report.technicalQuestions.map((q, i) => (
+                  <QuestionCard key={i} item={q} index={i} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {activeNav === "behavioral" && (
+            <section>
+              <div className="content-header">
+                <h2>Behavioral Questions</h2>
+                <span className="content-header__count">
+                  {report.behavioralQuestions.length} questions
+                </span>
+              </div>
+              <div className="q-list">
+                {report.behavioralQuestions.map((q, i) => (
+                  <QuestionCard key={i} item={q} index={i} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {activeNav === "roadmap" && (
+            <section>
+              <div className="content-header">
+                <h2>Preparation Road Map</h2>
+                <span className="content-header__count">
+                  {report.preparationPlan.length}-day plan
+                </span>
+              </div>
+              <div className="roadmap-list">
+                {report.preparationPlan.map((day) => (
+                  <RoadMapDay key={day.day} day={day} />
+                ))}
+              </div>
+            </section>
+          )}
+        </main>
+
+        <div className="interview-divider" />
+
+        {/* ── Right Sidebar ── */}
+        <aside className="interview-sidebar">
+          {/* Match Score */}
+          <div className="match-score">
+            <p className="match-score__label">Match Score</p>
+            <div className={`match-score__ring ${scoreColor}`}>
+              <span className="match-score__value">{report.matchScore}</span>
+              <span className="match-score__pct">%</span>
+            </div>
+            <p className="match-score__sub">Strong match for this role</p>
           </div>
 
-          <div className="skill-tip">
-            <span>i</span>
+          <div className="sidebar-divider" />
 
-            <p>
-              Focus on <strong>high priority</strong> gaps first while following
-              your preparation roadmap.
-            </p>
+          {/* Skill Gaps */}
+          <div className="skill-gaps">
+            <p className="skill-gaps__label">Skill Gaps</p>
+            <div className="skill-gaps__list">
+              {report.skillGaps.map((gap, i) => (
+                <span
+                  key={i}
+                  className={`skill-tag skill-tag--${gap.severity}`}
+                >
+                  {gap.skill}
+                </span>
+              ))}
+            </div>
           </div>
         </aside>
       </div>
-    </main>
+    </div>
   );
 };
 
