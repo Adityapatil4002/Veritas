@@ -5,7 +5,7 @@ import { useNavigate } from "react-router";
 
 const Home = () => {
 
-  const { loading, generateReport } = useInterview()
+  const { loading, generateReport, reports } = useInterview()
   const [jobDescription, setJobDescription] = useState("")
   const [selfDescription, setSelfDescription] = useState("")
   //const [resume, setResume] = useState(null)
@@ -149,13 +149,40 @@ design..."`}
           <p>AI-Powered Strategy Generation · Approx 30s</p>
 
           <button
-            onClick = {handleGenerateReport}
-            className="generate-button" type="button">
+            onClick={handleGenerateReport}
+            className="generate-button"
+            type="button"
+          >
             <span>★</span>
             Generate My Interview Strategy
           </button>
         </div>
       </div>
+
+      {reports.length > 0 && (
+        <section className="recent-reports">
+          <h2>Recent Reports</h2>
+          <ul className="reports-list">
+            {reports.map((report) => (
+              <li
+                key={report.id}
+                className="report-item"
+                onClick={() => navigate(`/interview/${report.id}`)}
+              >
+                <h3>{reports.title || "Untitled Position"}</h3>
+                <p className="report-meta">
+                  Generated on {new Date(report.createdAt).toLocaleDateString()}
+                </p>
+                <p
+                  className={`match-score ${report.matchScore >= 80 ? "score--high" : report.matchScore >= 60 ? "score--mid" : "score--low"}`}
+                >
+                  {report.matchScore}%
+                </p>{" "}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <div className="home-footer">
         <a href="/">Privacy Policy</a>
