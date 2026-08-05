@@ -543,7 +543,7 @@
     gap: 0.75rem;
     width: 100%;
     max-width: 900px;
-  }
+
     .reports-list {
       display: flex;
       //flex-direction: column;
@@ -551,8 +551,8 @@
       flex-wrap: wrap;
 
       .report-item {
-        background-color:rgba(30, 40, 55, 0.2);
-        border: 1px solid $border-color;
+        background-color: rgba(30, 40, 55, 0.2);
+        border: 1px solid var(--border);
         border-radius: 0.5rem;
         padding: 1rem;
         flex: 1;
@@ -562,12 +562,11 @@
         cursor: pointer;
         flex-shrink: 0;
 
-        .match-score{
+        .match-score {
           font-size: 0.8rem;
           font-weight: 600;
-          color: $accent;
+          color: var(--pink);
           align-items: flex-start;
-
         }
       }
     }
