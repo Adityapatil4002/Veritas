@@ -68,13 +68,11 @@ const NAV_ITEMS = [
 const QuestionCard = ({ item, index }) => {
   const [open, setOpen] = useState(false);
   return (
-    <div className="q-card">
-      <div className="q-card__header" onClick={() => setOpen((o) => !o)}>
-        <span className="q-card__index">Q{index + 1}</span>
-        <p className="q-card__question">{item.question}</p>
-        <span
-          className={`q-card__chevron ${open ? "q-card__chevron--open" : ""}`}
-        >
+    <div className={`question-card ${open ? "open" : ""}`}>
+      <button className="question-header" onClick={() => setOpen(!open)}>
+        <span className="question-number">Q{index + 1}</span>
+        <h3>{item.question}</h3>
+        <span className="question-toggle">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"
@@ -86,22 +84,22 @@ const QuestionCard = ({ item, index }) => {
             strokeLinecap="round"
             strokeLinejoin="round"
           >
-            <polyline points="6 9 12 15 18 9" />
+            {open ? (
+              <polyline points="18 15 12 9 6 15" />
+            ) : (
+              <polyline points="6 9 12 15 18 9" />
+            )}
           </svg>
         </span>
-      </div>
+      </button>
       {open && (
-        <div className="q-card__body">
-          <div className="q-card__section">
-            <span className="q-card__tag q-card__tag--intention">
-              Intention
-            </span>
+        <div className="question-details">
+          <div className="question-info">
+            <span className="detail-label">Intention</span>
             <p>{item.intention}</p>
           </div>
-          <div className="q-card__section">
-            <span className="q-card__tag q-card__tag--answer">
-              Model Answer
-            </span>
+          <div className="question-info answer">
+            <span className="detail-label">Model Answer</span>
             <p>{item.answer}</p>
           </div>
         </div>
@@ -111,19 +109,19 @@ const QuestionCard = ({ item, index }) => {
 };
 
 const RoadMapDay = ({ day }) => (
-  <div className="roadmap-day">
-    <div className="roadmap-day__header">
-      <span className="roadmap-day__badge">Day {day.day}</span>
-      <h3 className="roadmap-day__focus">{day.focus}</h3>
+  <div className="roadmap-card">
+    <div className="roadmap-day">
+      <span>DAY</span>
+      <strong>{day.day}</strong>
     </div>
-    <ul className="roadmap-day__tasks">
-      {day.tasks.map((task, i) => (
-        <li key={i}>
-          <span className="roadmap-day__bullet" />
-          {task}
-        </li>
-      ))}
-    </ul>
+    <div className="roadmap-content">
+      <h3>{day.focus}</h3>
+      <ul>
+        {day.tasks.map((task, i) => (
+          <li key={i}>{task}</li>
+        ))}
+      </ul>
+    </div>
   </div>
 );
 
@@ -147,66 +145,82 @@ const Interview = () => {
     );
   }
 
-  const scoreColor =
-    report.matchScore >= 80
-      ? "score--high"
-      : report.matchScore >= 60
-        ? "score--mid"
-        : "score--low";
-
   return (
     <div className="interview-page">
       <div className="interview-layout">
-        {/* ── Left Nav ── */}
-        <nav className="interview-nav">
-          <div className="nav-content">
-            <p className="interview-nav__label">Sections</p>
+        {/* ── Left Sidebar (Navigation & Score) ── */}
+        <aside className="interview-sidebar">
+          <div className="sidebar-heading">
+            <span className="sidebar-heading-icon">✦</span>
+            <span>Sections</span>
+          </div>
+
+          <nav className="interview-nav">
             {NAV_ITEMS.map((item) => (
               <button
                 key={item.id}
-                className={`interview-nav__item ${activeNav === item.id ? "interview-nav__item--active" : ""}`}
+                className={activeNav === item.id ? "active" : ""}
                 onClick={() => setActiveNav(item.id)}
               >
-                <span className="interview-nav__icon">{item.icon}</span>
+                <span className="nav-dot" />
+                {item.icon}
                 {item.label}
               </button>
             ))}
-          </div>
-          <button
-            onClick={() => {
-              getResumePdf(interviewId);
-            }}
-            className="button primary-button"
-          >
-            <svg
-              height={"0.8rem"}
-              style={{ marginRight: "0.8rem" }}
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-            >
-              <path d="M10.6144 17.7956 11.492 15.7854C12.2731 13.9966 13.6789 12.5726 15.4325 11.7942L17.8482 10.7219C18.6162 10.381 18.6162 9.26368 17.8482 8.92277L15.5079 7.88394C13.7092 7.08552 12.2782 5.60881 11.5105 3.75894L10.6215 1.61673C10.2916.821765 9.19319.821767 8.8633 1.61673L7.97427 3.75892C7.20657 5.60881 5.77553 7.08552 3.97685 7.88394L1.63658 8.92277C.868537 9.26368.868536 10.381 1.63658 10.7219L4.0523 11.7942C5.80589 12.5726 7.21171 13.9966 7.99275 15.7854L8.8704 17.7956C9.20776 18.5682 10.277 18.5682 10.6144 17.7956ZM19.4014 22.6899 19.6482 22.1242C20.0882 21.1156 20.8807 20.3125 21.8695 19.8732L22.6299 19.5353C23.0412 19.3526 23.0412 18.7549 22.6299 18.5722L21.9121 18.2532C20.8978 17.8026 20.0911 16.9698 19.6586 15.9269L19.4052 15.3156C19.2285 14.8896 18.6395 14.8896 18.4628 15.3156L18.2094 15.9269C17.777 16.9698 16.9703 17.8026 15.956 18.2532L15.2381 18.5722C14.8269 18.7549 14.8269 19.3526 15.2381 19.5353L15.9985 19.8732C16.9874 20.3125 17.7798 21.1156 18.2198 22.1242L18.4667 22.6899C18.6473 23.104 19.2207 23.104 19.4014 22.6899Z"></path>
-            </svg>
-            Download Resume
-          </button>
-        </nav>
 
-        <div className="interview-divider" />
+            <button
+              onClick={() => getResumePdf(interviewId)}
+              style={{ marginTop: "15px", color: "var(--pink-light)" }}
+            >
+              <span
+                className="nav-dot"
+                style={{
+                  background: "var(--pink-light)",
+                  boxShadow: "0 0 8px rgba(255, 23, 104, 0.7)",
+                }}
+              />
+              <svg
+                height={"0.8rem"}
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path d="M10.6144 17.7956 11.492 15.7854C12.2731 13.9966 13.6789 12.5726 15.4325 11.7942L17.8482 10.7219C18.6162 10.381 18.6162 9.26368 17.8482 8.92277L15.5079 7.88394C13.7092 7.08552 12.2782 5.60881 11.5105 3.75894L10.6215 1.61673C10.2916.821765 9.19319.821767 8.8633 1.61673L7.97427 3.75892C7.20657 5.60881 5.77553 7.08552 3.97685 7.88394L1.63658 8.92277C.868537 9.26368.868536 10.381 1.63658 10.7219L4.0523 11.7942C5.80589 12.5726 7.21171 13.9966 7.99275 15.7854L8.8704 17.7956C9.20776 18.5682 10.277 18.5682 10.6144 17.7956ZM19.4014 22.6899 19.6482 22.1242C20.0882 21.1156 20.8807 20.3125 21.8695 19.8732L22.6299 19.5353C23.0412 19.3526 23.0412 18.7549 22.6299 18.5722L21.9121 18.2532C20.8978 17.8026 20.0911 16.9698 19.6586 15.9269L19.4052 15.3156C19.2285 14.8896 18.6395 14.8896 18.4628 15.3156L18.2094 15.9269C17.777 16.9698 16.9703 17.8026 15.956 18.2532L15.2381 18.5722C14.8269 18.7549 14.8269 19.3526 15.2381 19.5353L15.9985 19.8732C16.9874 20.3125 17.7798 21.1156 18.2198 22.1242L18.4667 22.6899C18.6473 23.104 19.2207 23.104 19.4014 22.6899Z"></path>
+              </svg>
+              Download Resume
+            </button>
+          </nav>
+
+          <div className="sidebar-score">
+            <div className="score-heading">
+              <span>Match Score</span>
+              <strong>{report.matchScore}%</strong>
+            </div>
+            <div className="score-track">
+              <span style={{ width: `${report.matchScore}%` }} />
+            </div>
+            <p>Strong match for this role based on your profile.</p>
+          </div>
+        </aside>
 
         {/* ── Center Content ── */}
-        <main className="interview-content">
+        <main className="interview-main">
           {activeNav === "technical" && (
             <section>
               <div className="content-header">
-                <h2>Technical Questions</h2>
-                <span className="content-header__count">
-                  {report.technicalQuestions.length} questions
-                </span>
+                <span className="eyebrow">ASSESSMENT</span>
+                <h1>Technical Questions</h1>
+                <p>
+                  Review these core technical concepts tailored to your target
+                  role.
+                </p>
               </div>
-              <div className="q-list">
-                {report.technicalQuestions.map((q, i) => (
-                  <QuestionCard key={i} item={q} index={i} />
-                ))}
+              <div className="content-body">
+                <div className="questions-list">
+                  {report.technicalQuestions.map((q, i) => (
+                    <QuestionCard key={i} item={q} index={i} />
+                  ))}
+                </div>
               </div>
             </section>
           )}
@@ -214,15 +228,27 @@ const Interview = () => {
           {activeNav === "behavioral" && (
             <section>
               <div className="content-header">
-                <h2>Behavioral Questions</h2>
-                <span className="content-header__count">
-                  {report.behavioralQuestions.length} questions
-                </span>
+                <span className="eyebrow">CULTURE FIT</span>
+                <h1>Behavioral Questions</h1>
+                <p>
+                  Prepare for situational questions to showcase your soft
+                  skills.
+                </p>
               </div>
-              <div className="q-list">
-                {report.behavioralQuestions.map((q, i) => (
-                  <QuestionCard key={i} item={q} index={i} />
-                ))}
+              <div className="content-body">
+                <div className="questions-list">
+                  {/* 
+        Safely check for both spellings (British/American) just in case the AI 
+        formats it differently in future requests, and fall back to an empty array.
+      */}
+                  {(
+                    report.behaviouralQuestions ||
+                    report.behavioralQuestions ||
+                    []
+                  ).map((q, i) => (
+                    <QuestionCard key={i} item={q} index={i} />
+                  ))}
+                </div>
               </div>
             </section>
           )}
@@ -230,49 +256,52 @@ const Interview = () => {
           {activeNav === "roadmap" && (
             <section>
               <div className="content-header">
-                <h2>Preparation Road Map</h2>
-                <span className="content-header__count">
-                  {report.preparationPlan.length}-day plan
-                </span>
+                <span className="eyebrow">STRATEGY</span>
+                <h1>Preparation Road Map</h1>
+                <p>
+                  Your step-by-step {report.preparationPlan.length}-day guide to
+                  acing the interview.
+                </p>
               </div>
-              <div className="roadmap-list">
-                {report.preparationPlan.map((day) => (
-                  <RoadMapDay key={day.day} day={day} />
-                ))}
+              <div className="content-body">
+                <div className="roadmap-list">
+                  {report.preparationPlan.map((day) => (
+                    <RoadMapDay key={day.day} day={day} />
+                  ))}
+                </div>
               </div>
             </section>
           )}
         </main>
 
-        <div className="interview-divider" />
-
-        {/* ── Right Sidebar ── */}
-        <aside className="interview-sidebar">
-          {/* Match Score */}
-          <div className="match-score">
-            <p className="match-score__label">Match Score</p>
-            <div className={`match-score__ring ${scoreColor}`}>
-              <span className="match-score__value">{report.matchScore}</span>
-              <span className="match-score__pct">%</span>
+        {/* ── Right Sidebar (Skills) ── */}
+        <aside className="skill-sidebar">
+          <div className="skill-header">
+            <span className="skill-icon">⚠</span>
+            <div>
+              <h2>Skill Gaps</h2>
+              <p>Areas to focus on</p>
             </div>
-            <p className="match-score__sub">Strong match for this role</p>
           </div>
 
-          <div className="sidebar-divider" />
+          <div className="skill-list">
+            {report.skillGaps.map((gap, i) => (
+              <div
+                key={i}
+                className={`skill-item ${gap.severity.toLowerCase()}`}
+              >
+                <span className="skill-name">{gap.skill}</span>
+                <span className="severity">{gap.severity}</span>
+              </div>
+            ))}
+          </div>
 
-          {/* Skill Gaps */}
-          <div className="skill-gaps">
-            <p className="skill-gaps__label">Skill Gaps</p>
-            <div className="skill-gaps__list">
-              {report.skillGaps.map((gap, i) => (
-                <span
-                  key={i}
-                  className={`skill-tag skill-tag--${gap.severity}`}
-                >
-                  {gap.skill}
-                </span>
-              ))}
-            </div>
+          <div className="skill-tip">
+            <span>i</span>
+            <p>
+              <strong>Pro Tip:</strong> Focus on high severity gaps first to
+              maximize your interview success rate.
+            </p>
           </div>
         </aside>
       </div>

@@ -1,34 +1,39 @@
 import React, {useState, useRef} from "react";
 import "../style/home.scss";
-import {useInterview} from "./interview.context.jsx"
+import {useInterview} from "../hooks/useInterview"
 import { useNavigate } from "react-router";
 
 const Home = () => {
-
-  const { loading, generateReport, reports } = useInterview()
-  const [jobDescription, setJobDescription] = useState("")
-  const [selfDescription, setSelfDescription] = useState("")
+  const { loading, generateReport, reports } = useInterview();
+  const [jobDescription, setJobDescription] = useState("");
+  const [selfDescription, setSelfDescription] = useState("");
   //const [resume, setResume] = useState(null)
-  const resumeInputRef = useRef()
-  const navigate = useNavigate()
+  const resumeInputRef = useRef();
+  const navigate = useNavigate();
 
+  // home.jsx
 
-  const handleGenerateReport = async() => {
-    const resumeFile = resumeInputRef.current.files[0]
-    const data = await generateReport({ jobDescription, selfDescription, resumeFile })
-    navigate(`/interview/${data.id}`)
-  }
+  const handleGenerateReport = async () => {
+    const resumeFile = resumeInputRef.current.files[0];
+    const data = await generateReport({
+      jobDescription,
+      selfDescription,
+      resumeFile,
+    });
+
+    // FIX: Use '_id' because MongoDB documents default to '_id'
+    if (data?._id) {
+      navigate(`/interview/${data._id}`);
+    }
+  };
 
   if (loading) {
     return (
       <main className="loading-screen">
         <h1>Generating your interview plan...</h1>
       </main>
-    )
+    );
   }
-
-  
-
 
   return (
     <main className="home">
@@ -42,7 +47,6 @@ const Home = () => {
           build a winning strategy.
         </p>
       </div>
-
       <div className="interview-card">
         <div className="interview-input-group">
           {/* LEFT SIDE */}
@@ -158,18 +162,22 @@ design..."`}
           </button>
         </div>
       </div>
-
+      // home.jsx
       {reports.length > 0 && (
         <section className="recent-reports">
           <h2>Recent Reports</h2>
           <ul className="reports-list">
             {reports.map((report) => (
               <li
-                key={report.id}
+                // FIX 1: Change 'id' to '_id' for the unique key
+                key={report._id}
                 className="report-item"
-                onClick={() => navigate(`/interview/${report.id}`)}
+                // FIX 2: Change 'id' to '_id' for the navigation route
+                onClick={() => navigate(`/interview/${report._id}`)}
               >
-                <h3>{reports.title || "Untitled Position"}</h3>
+                {/* FIX 3: Change 'reports.title' (the array) to 'report.title' (the individual object) */}
+                <h3>{report.title || "Untitled Position"}</h3>
+
                 <p className="report-meta">
                   Generated on {new Date(report.createdAt).toLocaleDateString()}
                 </p>
@@ -177,13 +185,12 @@ design..."`}
                   className={`match-score ${report.matchScore >= 80 ? "score--high" : report.matchScore >= 60 ? "score--mid" : "score--low"}`}
                 >
                   {report.matchScore}%
-                </p>{" "}
+                </p>
               </li>
             ))}
           </ul>
         </section>
       )}
-
       <div className="home-footer">
         <a href="/">Privacy Policy</a>
         <a href="/">Terms of Service</a>
@@ -191,6 +198,6 @@ design..."`}
       </div>
     </main>
   );
-};
+};;
 
 export default Home;

@@ -56,12 +56,11 @@ const interviewReportSchema = z.object({
     title: z.string().describe("The title of the job which the interview report is generated "),
 });
 
-async function generateInterviewReport({ resume, selfDescription, jobDescription }) {
-
-    // const prompt = `Generate an interview report for a candidate with the following details:
-    // Resume: ${resume}
-    // Self Description: ${selfDescription}
-  // Job Description: ${jobDescription}`
+async function generateInterviewReport({
+  resume,
+  selfDescription,
+  jobDescription,
+}) {
   const prompt = `
 You are an expert technical interviewer.
 
@@ -120,21 +119,43 @@ Job Description:
 ${jobDescription}
 `;
 
+  const response = await ai.models.generateContent({
+    model: "gemini-3.1-flash-lite",
+    contents: prompt,
+    config: {
+      responseMimeType: "application/json",
+      // Pro-tip: Uncommenting this forces the API to strictly adhere to your structure,
+      // which prevents malformed JSON at the API level!
+      // responseSchema: zodToJsonSchema(interviewReportSchema),
+    },
+  });
 
-
-    const response = await ai.models.generateContent({
-      model: "gemini-3.1-flash-lite",
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-        //responseSchema: zodToJsonSchema(interviewReportSchema),
-      },
-    });
   console.log("RAW RESPONSE:");
   console.log(response.text);
-    return JSON.parse(response.text)
 
-    
+  // --- SANITIZATION LOGIC ---
+  let rawText = response.text;
+
+  // 1. Strip out markdown blocks (e.g., ```json ... ```) if the model included them
+  rawText = rawText
+    .replace(/```json/gi, "")
+    .replace(/```/g, "")
+    .trim();
+
+  // 2. Isolate the main JSON object by finding the first '{' and last '}'
+  const firstBrace = rawText.indexOf("{");
+  const lastBrace = rawText.lastIndexOf("}");
+
+  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+    rawText = rawText.substring(firstBrace, lastBrace + 1);
+  } else {
+    throw new Error(
+      "Failed to extract valid JSON boundaries from AI response.",
+    );
+  }
+
+  // 3. Safely parse the clean string
+  return JSON.parse(rawText);
 }
 
 async function generatePdfFromHtml(htmlContent) {
@@ -170,13 +191,14 @@ async function generateResumePdf({ resume, selfDescription, jobDescription }) {
   The resume should not be so lengthy, it should be ideally 1-2 pages long and should be concise and to the point. The resume should be in a professional format and should be suitable for submission to potential employers.`
 
   const response = await ai.models.generateContent({
-    model: "gemini-3-flash-lite",
+    // FIX: Changed 'gemini-3-flash-lite' to 'gemini-3.1-flash-lite'
+    model: "gemini-3.1-flash-lite",
     contents: prompt,
     config: {
       responseMimeType: "application/json",
       responseSchema: zodToJsonSchema(resumePdfSchema),
-    }
-  })
+    },
+  });
 
   const jsonContent = JSON.parse(response.text)
 
