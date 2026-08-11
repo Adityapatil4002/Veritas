@@ -1,55 +1,62 @@
-const userModel = require("../models/user.model")
-const bcrypt = require("bcryptjs")
-const jwt = require("jsonwebtoken")
-const tokenBlackListModel = require("../models/blacklist.model")
+const userModel = require("../models/user.model");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const tokenBlackListModel = require("../models/blacklist.model");
 
-/** 
+/**
  * @name registerUserController
  * @description register anew user, exprects username , email ans password in the request
  * @access public
-*/
+ */
 async function registerUserController(req, res) {
-    const { username, email, password } = req.body
-    
-    if (!username || !email || !password) {
-        return res.status(400).json({
-            message: "Please provide username, email and passowrd"
-        })
-    }
+  const { username, email, password } = req.body;
 
-    const isUserAlreadyExits = await userModel.findOne({
-        $or: [{username}, {email}]
-    })
+  if (!username || !email || !password) {
+    return res.status(400).json({
+      message: "Please provide username, email and passowrd",
+    });
+  }
 
-    if (isUserAlreadyExits) {
-        return res.status(400).json({
-            message: "Account is already exists with this email address or username"
-        })
-    }
+  const isUserAlreadyExits = await userModel.findOne({
+    $or: [{ username }, { email }],
+  });
 
-    const hash = await bcrypt.hash(password, 10)
+  if (isUserAlreadyExits) {
+    return res.status(400).json({
+      message: "Account is already exists with this email address or username",
+    });
+  }
 
-    const user = await userModel.create({
-        username,
-        email,
-        password: hash
-    })
+  const hash = await bcrypt.hash(password, 10);
 
-    const token = jwt.sign(
-        { id: user._id, username: user.username },
-        process.env.JWT_SECRET,
-        {expiresIn: "1d"}
-    )
+  const user = await userModel.create({
+    username,
+    email,
+    password: hash,
+  });
 
-    res.cookie("token", token)
-    res.status(201).json({
-        message: "user registeres successfully",
-        user: {
-            id: user._id,
-            username: user.username,
-            email: user.email
-        }
-    })
+  const token = jwt.sign(
+    { id: user._id, username: user.username },
+    process.env.JWT_SECRET,
+    { expiresIn: "1d" },
+  );
+
+  // FIX: Added cross-site cookie flags
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+    maxAge: 24 * 60 * 60 * 1000, // 1 day
+  });
+
+  res.status(201).json({
+    message: "user registeres successfully",
+    user: {
+      id: user._id,
+      username: user.username,
+      email: user.email,
+    },
+  });
 }
 
 /**
@@ -57,59 +64,69 @@ async function registerUserController(req, res) {
  * @description login a use, expects email and password in the request body
  * @access public
  */
-
 async function loginUserController(req, res) {
-    const { email, password } = req.body
-    const user = await userModel.findOne({ email })
-    if (!user) {
-        return res.status(400).json({
-            message: "Invalid email or password"
-        })
-    }
+  const { email, password } = req.body;
+  const user = await userModel.findOne({ email });
+  if (!user) {
+    return res.status(400).json({
+      message: "Invalid email or password",
+    });
+  }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password)
-    
-    if (!isPasswordValid) {
-        return res.status(400).json({
-            message: "Invalid email or password"
-        })
-    }
+  const isPasswordValid = await bcrypt.compare(password, user.password);
 
-    const token = jwt.sign(
-        { id: user._id, username: user.username },
-        process.env.JWT_SECRET,
-        { expiresIn: "1d"}
-    )
+  if (!isPasswordValid) {
+    return res.status(400).json({
+      message: "Invalid email or password",
+    });
+  }
 
-    res.cookie("token", token)
-    res.status(200).json ({
-        message: "user logged in successfully",
-            user: {
-                id: user._id,
-                username: user.username,
-                email: user.email
-            }
-    })
+  const token = jwt.sign(
+    { id: user._id, username: user.username },
+    process.env.JWT_SECRET,
+    { expiresIn: "1d" },
+  );
 
+  // FIX: Added cross-site cookie flags
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+    maxAge: 24 * 60 * 60 * 1000, // 1 day
+  });
+
+  res.status(200).json({
+    message: "user logged in successfully",
+    user: {
+      id: user._id,
+      username: user.username,
+      email: user.email,
+    },
+  });
 }
 
 /**
  * @name logoutUserController
- * @description clar token from user cookie and add the token in blacklist 
+ * @description clar token from user cookie and add the token in blacklist
  * @access public
  */
 async function logoutUserController(req, res) {
-    const token = req.cookies.token
+  const token = req.cookies.token;
 
-    if (token) {
-        await tokenBlackListModel.create({token})
-    }
+  if (token) {
+    await tokenBlackListModel.create({ token });
+  }
 
-    res.clearCookie("token")
+  // FIX: Added cross-site cookie flags for clearing
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+  });
 
-    res.status(200).json ({
-        message: "User logged out successfully"
-    })
+  res.status(200).json({
+    message: "User logged out successfully",
+  });
 }
 
 /**
@@ -139,8 +156,8 @@ async function getMeController(req, res) {
 }
 
 module.exports = {
-    registerUserController,
-    loginUserController,
-    logoutUserController,
-    getMeController
-}
+  registerUserController,
+  loginUserController,
+  logoutUserController,
+  getMeController,
+};

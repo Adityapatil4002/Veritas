@@ -1,19 +1,22 @@
+const cors = require("cors");
 const express = require("express");
 const cookieParser = require("cookie-parser");
-const cors = require("cors")
 
 const app = express();
 
+// FIX: Explicit CORS configuration for production credentials
+app.use(
+  cors({
+    origin: "https://your-veritas-frontend-url.vercel.app", // MUST match your Vercel URL exactly (no trailing slash)
+    credentials: true, // MUST be true for cookies to be sent back and forth
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+);
+
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors ({
-    origin: "http://localhost:5173",
-    credentials: true
-}))
 
-const authRouter = require("./routes/auth.routes");
-const interviewRouter = require("./routes/interview.routes")
+// ... rest of your routes (e.g., app.use("/api/auth", authRoutes))
 
-app.use("/api/auth", authRouter);
-app.use("/api/interview", interviewRouter)
 module.exports = app;
