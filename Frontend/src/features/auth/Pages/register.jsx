@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "../services/hooks/useAuth";
 
 const Register = () => {
-  const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -17,7 +16,8 @@ const Register = () => {
 
     try {
       await register({ username, email, password });
-      navigate("/", { replace: true });
+      // Force redirect without useNavigate
+      window.location.href = "/";
     } catch (error) {
       console.error("Registration failed:", error);
       setIsSubmitting(false);
@@ -37,8 +37,6 @@ const Register = () => {
               onChange={(e) => setUsername(e.target.value)}
               type="text"
               id="username"
-              name="username"
-              placeholder="Enter your username"
               required
             />
           </div>
@@ -50,8 +48,6 @@ const Register = () => {
               onChange={(e) => setEmail(e.target.value)}
               type="email"
               id="email"
-              name="email"
-              placeholder="Enter your email address"
               required
             />
           </div>
@@ -63,7 +59,6 @@ const Register = () => {
               onChange={(e) => setPassword(e.target.value)}
               type="password"
               id="password"
-              placeholder="Enter the password"
               required
             />
           </div>

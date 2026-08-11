@@ -1,11 +1,10 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import "../auth.form.scss";
 import { useAuth } from "../services/hooks/useAuth";
 
 const Login = () => {
   const { login } = useAuth();
-  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -16,7 +15,8 @@ const Login = () => {
 
     try {
       await login({ email, password });
-      navigate("/", { replace: true });
+      // Force redirect without useNavigate
+      window.location.href = "/";
     } catch (error) {
       console.error("Login failed:", error);
       setIsSubmitting(false);
@@ -36,8 +36,6 @@ const Login = () => {
               onChange={(e) => setEmail(e.target.value)}
               type="email"
               id="email"
-              name="email"
-              placeholder="Enter your email address"
               required
             />
           </div>
@@ -49,7 +47,6 @@ const Login = () => {
               onChange={(e) => setPassword(e.target.value)}
               type="password"
               id="password"
-              placeholder="Enter the password"
               required
             />
           </div>
