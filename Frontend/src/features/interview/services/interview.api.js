@@ -49,12 +49,9 @@ export const getAllInterviewReports = async () => {
  * @description generate a pdf of the resume on the basis of self description, resume content and job decritpion
  */
 export const generateResumePdf = async (interviewReportId) => {
+  // FIX: Removed the blob responseType since the backend now sends JSON
   const response = await api.post(
     `/api/interview/resume/pdf/${interviewReportId}`,
-    null,
-    {
-      responseType: "blob",
-    },
   );
   return response.data;
 };

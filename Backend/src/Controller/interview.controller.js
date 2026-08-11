@@ -109,23 +109,22 @@ async function generateResumePdfController(req, res) {
 
     const { resume, jobDescription, selfDescription } = interviewReport;
 
-    const pdfBuffer = await generateResumePdf({
+    // Fetch the JSON data from your AI service instead of a PDF buffer
+    const resumeData = await generateResumePdf({
       resume,
       jobDescription,
       selfDescription,
     });
 
-    res.set({
-      "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename=resume_${interviewReportId}.pdf`,
+    // Send the structured JSON directly to the frontend
+    res.status(200).json({
+      message: "Resume data generated successfully",
+      resumeData,
     });
-
-    res.send(pdfBuffer);
   } catch (error) {
-    // FIX: Added a try...catch block to properly log and handle upstream errors
-    console.error("PDF Generation Error:", error);
+    console.error("Resume Data Generation Error:", error);
     res.status(500).json({
-      message: "Failed to generate resume PDF",
+      message: "Failed to generate resume data",
       error: error.message,
     });
   }

@@ -1,7 +1,9 @@
-import { getAllInterviewReports, getInterviewReportById, generateInterviewReport, generateResumePdf } from "../services/interview.api"
+import { getAllInterviewReports, getInterviewReportById, generateInterviewReport, generateResumePdf } from "../services/interview.api.js"
 import { useContext, useEffect } from "react"
 import { InterviewContext } from "../interview.context.jsx"
-import {useParams} from "react-router-dom"
+import { useParams } from "react-router-dom"
+import { pdf } from "@react-pdf/renderer";
+import ResumePDF from "../components/ResumePDF.jsx";
 
 
 export const useInterview = () => {
@@ -71,27 +73,31 @@ export const useInterview = () => {
     return response.interviewReports;
   };
 
-  const getResumePdf = async (interviewReportId) => {
-    setLoading(true);
-    let response = null;
-    try {
-      response = await generateResumePdf(interviewReportId);
-      const url = window.URL.createObjectURL(
-        new Blob([response], { type: "application/pdf" }),
-      );
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `resume_${interviewReportId}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      //link.parentNode.removeChild(link)
-    } catch (error) {
-      console.error("Error generating resume pdf:", error);
-    } finally {
-      setLoading(false);
-    }
-    return response;
-  };
+const getResumePdf = async (interviewReportId) => {
+  setLoading(true);
+  let response = null;
+  try {
+    // 1. Fetch the JSON data from your backend
+    response = await generateResumePdf(interviewReportId);
+
+    // 2. Generate the PDF Blob on the fly using React-PDF
+    const blob = await pdf(<ResumePDF data={response.resumeData} />).toBlob();
+
+    // 3. Trigger the browser download
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `Optimized_Resume_${interviewReportId}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    link.parentNode.removeChild(link);
+  } catch (error) {
+    console.error("Error generating resume pdf:", error);
+  } finally {
+    setLoading(false);
+  }
+  return response;
+};
 
   useEffect(() => {
     if (interviewId) {
