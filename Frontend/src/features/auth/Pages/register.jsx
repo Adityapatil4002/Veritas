@@ -4,32 +4,25 @@ import { useAuth } from "../services/hooks/useAuth";
 
 const Register = () => {
   const navigate = useNavigate();
-  const [username, setusername] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // FIX: Destructure 'register' instead of 'handleRegister'
-  const { loading, register } = useAuth();
+  const { register } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
     try {
-      // FIX: Await the 'register' function
       await register({ username, email, password });
-      navigate("/");
+      navigate("/", { replace: true });
     } catch (error) {
       console.error("Registration failed:", error);
+      setIsSubmitting(false);
     }
   };
-
-  if (loading) {
-    return (
-      <main>
-        <h1>Loading....</h1>
-      </main>
-    );
-  }
 
   return (
     <main>
@@ -40,43 +33,52 @@ const Register = () => {
           <div className="input-group">
             <label htmlFor="username">Username</label>
             <input
-              onChange={(e) => {
-                setusername(e.target.value);
-              }}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               type="text"
               id="username"
               name="username"
-              placeholder="Enter you username"
+              placeholder="Enter your username"
+              required
             />
           </div>
+
           <div className="input-group">
             <label htmlFor="email">Email</label>
             <input
-              onChange={(e) => {
-                setEmail(e.target.value);
-              }}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               type="email"
               id="email"
               name="email"
-              placeholder="Enter you email address"
+              placeholder="Enter your email address"
+              required
             />
           </div>
+
           <div className="input-group">
             <label htmlFor="password">Password</label>
             <input
-              onChange={(e) => {
-                setPassword(e.target.value);
-              }}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               type="password"
               id="password"
-              placeholder="enter the password"
+              placeholder="Enter the password"
+              required
             />
           </div>
-          <button className="button primary-button">Register</button>
+
+          <button
+            className="button primary-button"
+            type="submit"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Registering..." : "Register"}
+          </button>
         </form>
 
         <p>
-          Already have an account? <Link to={"/login"}>login</Link>
+          Already have an account? <Link to="/login">login</Link>
         </p>
       </div>
     </main>

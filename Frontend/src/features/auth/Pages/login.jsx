@@ -4,29 +4,24 @@ import "../auth.form.scss";
 import { useAuth } from "../services/hooks/useAuth";
 
 const Login = () => {
-  const { loading, login } = useAuth(); // ← changed to "login"
+  const { login } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
     try {
       await login({ email, password });
-      navigate("/");
+      navigate("/", { replace: true });
     } catch (error) {
       console.error("Login failed:", error);
+      setIsSubmitting(false);
     }
   };
-
-  if (loading) {
-    return (
-      <main>
-        <h1>Loading.......</h1>
-      </main>
-    );
-  }
 
   return (
     <main>
@@ -37,23 +32,35 @@ const Login = () => {
           <div className="input-group">
             <label htmlFor="email">Email</label>
             <input
+              value={email}
               onChange={(e) => setEmail(e.target.value)}
               type="email"
               id="email"
               name="email"
               placeholder="Enter your email address"
+              required
             />
           </div>
+
           <div className="input-group">
             <label htmlFor="password">Password</label>
             <input
+              value={password}
               onChange={(e) => setPassword(e.target.value)}
               type="password"
               id="password"
               placeholder="Enter the password"
+              required
             />
           </div>
-          <button className="button primary-button">Login</button>
+
+          <button
+            className="button primary-button"
+            type="submit"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Logging in..." : "Login"}
+          </button>
         </form>
 
         <p>
