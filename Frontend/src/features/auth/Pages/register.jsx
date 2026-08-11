@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-// FIX 1: Import from 'react-router-dom' for web apps
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../services/hooks/useAuth";
 
@@ -9,15 +8,15 @@ const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const { loading, handleRegister } = useAuth();
+  // FIX: Destructure 'register' instead of 'handleRegister'
+  const { loading, register } = useAuth();
 
-  // FIX 2: Make the handler async to wait for the network request
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      // FIX 3: Await the API call before changing the page
-      await handleRegister({ username, email, password });
+      // FIX: Await the 'register' function
+      await register({ username, email, password });
       navigate("/");
     } catch (error) {
       console.error("Registration failed:", error);

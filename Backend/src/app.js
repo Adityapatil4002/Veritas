@@ -7,7 +7,7 @@ const app = express();
 // FIX: Explicit CORS configuration for production credentials
 app.use(
   cors({
-    origin: "https://your-veritas-frontend-url.vercel.app", // MUST match your Vercel URL exactly (no trailing slash)
+    origin: "https://veritas-seven-indol.vercel.app", // MUST match your Vercel URL exactly (no trailing slash)
     credentials: true, // MUST be true for cookies to be sent back and forth
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
