@@ -1,26 +1,37 @@
-import React,{useState} from 'react'
-import { useNavigate,Link } from 'react-router'
-import { useAuth } from '../services/hooks/useAuth'
+import React, { useState } from "react";
+// FIX 1: Import from 'react-router-dom' for web apps
+import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../services/hooks/useAuth";
 
 const Register = () => {
+  const navigate = useNavigate();
+  const [username, setusername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  const navigate = useNavigate()
-  const [username, setusername] = useState("")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
+  const { loading, handleRegister } = useAuth();
 
-  const {loading, handleRegister} = useAuth()
-    const handleSubmit = (e) => {
-      e.preventDefault();
-      handleRegister({ username, email, password })
-      navigate("/")
+  // FIX 2: Make the handler async to wait for the network request
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      // FIX 3: Await the API call before changing the page
+      await handleRegister({ username, email, password });
+      navigate("/");
+    } catch (error) {
+      console.error("Registration failed:", error);
+    }
   };
-  
+
   if (loading) {
-    return (<main><h1>Loading....</h1></main>)
+    return (
+      <main>
+        <h1>Loading....</h1>
+      </main>
+    );
   }
 
-    
   return (
     <main>
       <div className="forom-container">
@@ -71,6 +82,6 @@ const Register = () => {
       </div>
     </main>
   );
-}
+};
 
-export default Register
+export default Register;
