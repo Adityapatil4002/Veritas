@@ -2,13 +2,17 @@ const cors = require("cors");
 const express = require("express");
 const cookieParser = require("cookie-parser");
 
+const authRoutes = require("./routes/auth.routes");
+// If you have interview routes, also import them:
+// const interviewRoutes = require("./routes/interview.routes");
+
 const app = express();
 
-// FIX: Explicit CORS configuration for production credentials
+// CORS for production
 app.use(
   cors({
-    origin: "https://veritas-seven-indol.vercel.app", // MUST match your Vercel URL exactly (no trailing slash)
-    credentials: true, // MUST be true for cookies to be sent back and forth
+    origin: "https://veritas-seven-indol.vercel.app", // ← make sure this is exactly your Vercel URL
+    credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   }),
@@ -17,6 +21,8 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
-// ... rest of your routes (e.g., app.use("/api/auth", authRoutes))
+// Mount the routes
+app.use("/api/auth", authRoutes);
+// app.use("/api/interview", interviewRoutes); // uncomment if you have this
 
 module.exports = app;
