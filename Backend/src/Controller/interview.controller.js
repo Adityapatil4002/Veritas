@@ -8,9 +8,6 @@ const interviewReportModel = require("../models/interviewReport.model");
 /**
  * @description generate a new interview report on the basis of user self desciption, resume pdf and job description
  */
-/**
- * @description generate a new interview report on the basis of user self desciption, resume pdf and job description
- */
 async function generateInterviewReportController(req, res) {
   try {
     if (!req.file) {
@@ -31,13 +28,23 @@ async function generateInterviewReportController(req, res) {
     });
     console.log("AI RESPONSE:", JSON.stringify(interviewReportByAi, null, 2));
 
+    // Optional but recommended: Ensure Clerk attached the ID before hitting the DB
+    if (!req.auth || !req.auth.userId) {
+      return res
+        .status(401)
+        .json({ message: "Unauthorized: No user ID found" });
+    }
+
     const interviewReport = await interviewReportModel.create({
-      user: req.auth.userId, // FIX: Changed from req.user.id to req.auth.userId
-      title: "Untitled Interview Plan", 
+      // FIX: Spread the AI response FIRST so it doesn't overwrite your explicit backend values
+      ...interviewReportByAi,
+
+      // These explicit values are now safe from being overwritten by the AI payload
+      user: req.auth.userId,
+      title: "Untitled Interview Plan",
       resume: resumeContent,
       selfDescription,
       jobDescription,
-      ...interviewReportByAi,
     });
 
     res.status(201).json({
@@ -95,7 +102,7 @@ async function getAllInterviewReportsController(req, res) {
 }
 
 /**
- * @description generate a new interview report on the basis of user self desciption, resume pdf and job description
+ * @description generate a new resume data object on the basis of user self desciption, resume pdf and job description
  */
 async function generateResumePdfController(req, res) {
   try {
