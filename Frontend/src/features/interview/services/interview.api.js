@@ -1,14 +1,33 @@
 import axios from "axios";
+import { useAuth } from "@clerk/clerk-react"; // we will not use the hook here
+// Instead we will use the low-level method
 
 const api = axios.create({
   baseURL: "https://veritas-qqil.onrender.com",
   withCredentials: true,
 });
 
+// Helper to get the token
+const getClerkToken = async () => {
+  // This works because Clerk attaches the token helper on window when loaded
+  if (window.Clerk) {
+    return await window.Clerk.session?.getToken();
+  }
+  return null;
+};
+
+// Add token to every request
+api.interceptors.request.use(async (config) => {
+  const token = await getClerkToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 /**
- * @description generate a new interview report on the basis of user self desciption, resume pdf and job description
+ * Generate a new interview report
  */
-// FIX 1: Added 'async' keyword here
 export const generateInterviewReport = async ({
   jobDescription,
   selfDescription,
@@ -17,9 +36,10 @@ export const generateInterviewReport = async ({
   const formData = new FormData();
   formData.append("jobDescription", jobDescription);
   formData.append("selfDescription", selfDescription);
-  formData.append("resume", resumeFile);
+  if (resumeFile) {
+    formData.append("resume", resumeFile);
+  }
 
-  // FIX 2: Corrected spelling from 'reposnse' to 'response'
   const response = await api.post("/api/interview", formData, {
     headers: {
       "Content-Type": "multipart/form-data",
@@ -30,7 +50,7 @@ export const generateInterviewReport = async ({
 };
 
 /**
- * @description get the interview report on the basis of interviewId
+ * Get interview report by ID
  */
 export const getInterviewReportById = async (interviewId) => {
   const response = await api.get(`/api/interview/report/${interviewId}`);
@@ -38,7 +58,7 @@ export const getInterviewReportById = async (interviewId) => {
 };
 
 /**
- * @description get all the interview reports of the user
+ * Get all interview reports of the user
  */
 export const getAllInterviewReports = async () => {
   const response = await api.get("/api/interview/");
@@ -46,10 +66,9 @@ export const getAllInterviewReports = async () => {
 };
 
 /**
- * @description generate a pdf of the resume on the basis of self description, resume content and job decritpion
+ * Generate resume PDF
  */
 export const generateResumePdf = async (interviewReportId) => {
-  // FIX: Removed the blob responseType since the backend now sends JSON
   const response = await api.post(
     `/api/interview/resume/pdf/${interviewReportId}`,
   );
