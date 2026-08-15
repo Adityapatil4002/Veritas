@@ -1,7 +1,7 @@
 import React, {useState, useRef} from "react";
 import "../style/home.scss";
 import {useInterview} from "../hooks/useInterview"
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
   const { loading, generateReport, reports } = useInterview();
@@ -11,7 +11,7 @@ const Home = () => {
   const resumeInputRef = useRef();
   const navigate = useNavigate();
 
-  // home.jsx
+
 
   const handleGenerateReport = async () => {
     const resumeFile = resumeInputRef.current.files[0];
@@ -162,7 +162,7 @@ design..."`}
           </button>
         </div>
       </div>
-      // home.jsx
+     
       {reports.length > 0 && (
         <section className="recent-reports">
           <h2>Recent Reports</h2>

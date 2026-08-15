@@ -1,19 +1,18 @@
-import { useAuth } from "../services/hooks/useAuth";
+import { useAuth } from "@clerk/clerk-react";
 import { Navigate } from "react-router-dom";
-import React from "react";
 
 const Protected = ({ children }) => {
-  const { loading, user } = useAuth();
+  const { isLoaded, isSignedIn } = useAuth();
 
-  if (loading) {
+  if (!isLoaded) {
     return (
       <main>
-        <h1>Loading....</h1>
+        <h1>Loading...</h1>
       </main>
     );
   }
 
-  if (!user) {
+  if (!isSignedIn) {
     return <Navigate to="/login" replace />;
   }
 
