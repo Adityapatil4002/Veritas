@@ -1,54 +1,52 @@
 const express = require("express");
-const authMiddleware = require("../Middlewares/auth.middleware");
+const { requireAuth } = require("@clerk/express");
 const interviewController = require("../Controller/interview.controller");
 const upload = require("../Middlewares/file.middleware");
 
 const interviewRouter = express.Router();
 
 /**
- * @route POST/api/interview/
- * @description generate a new interview report on the basis of user self desciption, resume pdf and job description
+ * @route POST /api/interview/
+ * @description Generate a new interview report
  * @access private
  */
 interviewRouter.post(
   "/",
-  authMiddleware.authUser,
+  requireAuth(),
   upload.single("resume"),
   interviewController.generateInterviewReportController,
 );
 
 /**
- * @route GET/api/interview/report/:interviewId
- * @description get the interview report on the basis of interviewId
+ * @route GET /api/interview/report/:interviewId
+ * @description Get interview report by ID
  * @access private
  */
-// FIXED THIS LINE: Added "ById"
 interviewRouter.get(
   "/report/:interviewId",
-  authMiddleware.authUser,
+  requireAuth(),
   interviewController.getInterviewReportByIdController,
 );
 
 /**
- * @route GET/api/interview/
- * @description get all the interview reports of the user
+ * @route GET /api/interview/
+ * @description Get all interview reports of the logged-in user
  * @access private
  */
 interviewRouter.get(
   "/",
-  authMiddleware.authUser,
+  requireAuth(),
   interviewController.getAllInterviewReportsController,
 );
 
 /**
- * @route POST/api/interview/resume/pdf/:interviewReportId
- * @description generate a pdf of the resume on the basis of self description, resume content and job decritpion
+ * @route POST /api/interview/resume/pdf/:interviewReportId
+ * @description Generate resume PDF
  * @access private
  */
-// FIXED THIS LINE: Added "interviewController." prefix
 interviewRouter.post(
   "/resume/pdf/:interviewReportId",
-  authMiddleware.authUser,
+  requireAuth(),
   interviewController.generateResumePdfController,
 );
 

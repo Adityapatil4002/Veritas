@@ -1,6 +1,7 @@
 const cors = require("cors");
 const express = require("express");
 const cookieParser = require("cookie-parser");
+const { clerkMiddleware } = require("@clerk/express");
 
 const authRoutes = require("./routes/auth.routes");
 const interviewRoutes = require("./routes/interview.routes");
@@ -18,6 +19,9 @@ app.use(
 
 app.use(express.json());
 app.use(cookieParser());
+
+// Clerk middleware (must be before routes)
+app.use(clerkMiddleware());
 
 // Routes
 app.use("/api/auth", authRoutes);
