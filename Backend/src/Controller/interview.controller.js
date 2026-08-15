@@ -8,6 +8,9 @@ const interviewReportModel = require("../models/interviewReport.model");
 /**
  * @description generate a new interview report on the basis of user self desciption, resume pdf and job description
  */
+/**
+ * @description generate a new interview report on the basis of user self desciption, resume pdf and job description
+ */
 async function generateInterviewReportController(req, res) {
   try {
     if (!req.file) {
@@ -29,8 +32,8 @@ async function generateInterviewReportController(req, res) {
     console.log("AI RESPONSE:", JSON.stringify(interviewReportByAi, null, 2));
 
     const interviewReport = await interviewReportModel.create({
-      user: req.user.id,
-      title: "Untitled Interview Plan", // FIX: Added a default title to satisfy the DB schema
+      user: req.auth.userId, // FIX: Changed from req.user.id to req.auth.userId
+      title: "Untitled Interview Plan", 
       resume: resumeContent,
       selfDescription,
       jobDescription,
