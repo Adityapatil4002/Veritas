@@ -1,9 +1,6 @@
 const mongoose = require("mongoose");
 
-/**
 
-* Interview Report Schema
-  */
 
 const technicalQuestionsSchema = new mongoose.Schema(
   {
@@ -113,14 +110,13 @@ const interviewReportSchema = new mongoose.Schema(
     preparationPlan: [preparationPlanSchema],
 
     user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "users",
+      type: String, // ← changed from ObjectId
+      required: true,
     },
     title: {
       type: String,
       required: [true, " Job title is required"],
-    }
-    
+    },
   },
   {
     timestamps: true,

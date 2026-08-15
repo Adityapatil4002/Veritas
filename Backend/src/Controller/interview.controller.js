@@ -59,7 +59,7 @@ async function getInterviewReportByIdController(req, res) {
   // FIX: Used findOne instead of findById when passing an object query
   const interviewReport = await interviewReportModel.findOne({
     _id: interviewId,
-    user: req.user.id,
+    user: req.auth.userId,
   });
 
   if (!interviewReport) {
@@ -79,7 +79,7 @@ async function getInterviewReportByIdController(req, res) {
 async function getAllInterviewReportsController(req, res) {
   // FIX: Await the entire query chain, not just the find() method
   const interviewReports = await interviewReportModel
-    .find({ user: req.user.id })
+    .find({ user: req.auth.userId })
     .sort({ createdAt: -1 })
     .select(
       "-resume -selfDescription -jobDescription -__v -technicalQuestions -behaviouralQuestions -skillGaps -preparationPlan",
