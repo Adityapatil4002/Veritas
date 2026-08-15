@@ -1,6 +1,5 @@
 import axios from "axios";
-import { useAuth } from "@clerk/clerk-react"; // we will not use the hook here
-// Instead we will use the low-level method
+// We don't need the hook here since you are using the window object!
 
 const api = axios.create({
   baseURL: "https://veritas-qqil.onrender.com",
@@ -10,8 +9,8 @@ const api = axios.create({
 // Helper to get the token
 const getClerkToken = async () => {
   // This works because Clerk attaches the token helper on window when loaded
-  if (window.Clerk) {
-    return await window.Clerk.session?.getToken();
+  if (window.Clerk && window.Clerk.session) {
+    return await window.Clerk.session.getToken();
   }
   return null;
 };
@@ -40,11 +39,9 @@ export const generateInterviewReport = async ({
     formData.append("resume", resumeFile);
   }
 
-  const response = await api.post("/api/interview", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
+  // FIX: Removed the manual "Content-Type" header.
+  // Axios and the browser will automatically set it WITH the required boundary string.
+  const response = await api.post("/api/interview", formData);
 
   return response.data;
 };
