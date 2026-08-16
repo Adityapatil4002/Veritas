@@ -169,7 +169,7 @@ const Interview = () => {
             ))}
 
             <button
-              onClick={() => getResumePdf(interviewId)}
+              onClick={() => getResumePdf(report._id)}
               style={{ marginTop: "15px", color: "var(--pink-light)" }}
             >
               <span
