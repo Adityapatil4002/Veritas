@@ -9,6 +9,7 @@ const Home = () => {
   const [selfDescription, setSelfDescription] = useState("");
   const [fileName, setFileName] = useState("");
   const [dragActive, setDragActive] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const resumeInputRef = useRef();
   const navigate = useNavigate();
@@ -35,9 +36,16 @@ const Home = () => {
     }
   };
 
+  const triggerUploadSuccess = (file) => {
+    setFileName(file.name);
+    setUploadSuccess(false);
+    // Trigger success animation after brief delay
+    setTimeout(() => setUploadSuccess(true), 100);
+  };
+
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    if (file) setFileName(file.name);
+    if (file) triggerUploadSuccess(file);
   };
 
   const handleDrag = (e) => {
@@ -53,8 +61,16 @@ const Home = () => {
     setDragActive(false);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       resumeInputRef.current.files = e.dataTransfer.files;
-      setFileName(e.dataTransfer.files[0].name);
+      triggerUploadSuccess(e.dataTransfer.files[0]);
     }
+  };
+
+  const handleRemoveFile = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setFileName("");
+    setUploadSuccess(false);
+    if (resumeInputRef.current) resumeInputRef.current.value = "";
   };
 
   if (loading) {
@@ -102,30 +118,10 @@ const Home = () => {
             Dashboard
           </a>
           <a href="#" className="nav-link">
-            Strategy Prep
-          </a>
-          <a href="#" className="nav-link">
             History
-          </a>
-          <a href="#" className="nav-link">
-            Network
           </a>
         </div>
         <div className="nav-right">
-          <button className="icon-btn" aria-label="Notifications">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-            </svg>
-            <span className="notification-dot"></span>
-          </button>
           <button className="icon-btn user-btn" aria-label="Profile">
             <svg
               viewBox="0 0 24 24"
@@ -192,46 +188,18 @@ const Home = () => {
                   onChange={(e) => setJobDescription(e.target.value)}
                   id="jobDescription"
                   placeholder="Paste the full job description here..."
-                  className="animated-input"
+                  className="animated-input jd-textarea"
                 />
                 <div className="char-counter">
                   {jobDescription.length} chars
                 </div>
               </div>
             </div>
-
-            {/* Desktop Button */}
-            <button
-              onClick={handleGenerateReport}
-              className="action-btn desktop-btn"
-              type="button"
-            >
-              <span className="btn-bg"></span>
-              <span className="btn-content">
-                <svg
-                  className="btn-icon"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-                Commence Simulation
-                <svg
-                  className="btn-arrow"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path d="M5 12h14M12 5l7 7-7 7"></path>
-                </svg>
-              </span>
-            </button>
           </div>
 
           {/* RIGHT COLUMN */}
-          <div className="grid-right">
-            <div className="panel glowing-border fade-in-up stagger-2">
+          <div className="grid-right fade-in-up stagger-2">
+            <div className="panel glowing-border">
               <div className="panel-shine"></div>
               <div className="panel-header">
                 <div className="icon-wrapper">
@@ -252,21 +220,20 @@ const Home = () => {
                 </div>
               </div>
               <p className="panel-subtitle">
-                Briefly describe your core expertise, career objectives, and key
-                achievements.
+                Briefly describe your core expertise and key achievements.
               </p>
               <div className="input-wrapper">
                 <textarea
                   value={selfDescription}
                   onChange={(e) => setSelfDescription(e.target.value)}
                   id="selfDescription"
-                  className="small-textarea animated-input"
+                  className="animated-input self-textarea"
                   placeholder="Describe your relevant experience and goals..."
                 />
               </div>
             </div>
 
-            <div className="panel glowing-border fade-in-up stagger-3">
+            <div className="panel glowing-border">
               <div className="panel-shine"></div>
               <div className="panel-header">
                 <div className="icon-wrapper">
@@ -300,7 +267,7 @@ const Home = () => {
                 onDrop={handleDrop}
               >
                 {!fileName ? (
-                  <>
+                  <div className="upload-empty">
                     <div className="upload-icon-wrapper">
                       <svg
                         className="upload-icon"
@@ -319,22 +286,81 @@ const Home = () => {
                       <span className="highlight">click to browse</span>
                     </span>
                     <span className="upload-limits">PDF, DOCX • Max 5MB</span>
-                  </>
+                  </div>
                 ) : (
-                  <>
-                    <div className="upload-icon-wrapper success">
-                      <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <path d="M20 6L9 17l-5-5"></path>
+                  <div
+                    className={`upload-success ${uploadSuccess ? "animate" : ""}`}
+                  >
+                    {/* Success ripple effects */}
+                    <div className="success-ripple ripple-1"></div>
+                    <div className="success-ripple ripple-2"></div>
+                    <div className="success-ripple ripple-3"></div>
+
+                    {/* Confetti particles */}
+                    <div className="confetti-container">
+                      {[...Array(12)].map((_, i) => (
+                        <span
+                          key={i}
+                          className={`confetti confetti-${i + 1}`}
+                        ></span>
+                      ))}
+                    </div>
+
+                    {/* Success checkmark */}
+                    <div className="success-icon-wrapper">
+                      <svg className="success-check" viewBox="0 0 52 52">
+                        <circle
+                          className="check-circle"
+                          cx="26"
+                          cy="26"
+                          r="24"
+                          fill="none"
+                        />
+                        <path
+                          className="check-mark"
+                          fill="none"
+                          d="M14 27l7.5 7.5L38 18"
+                        />
                       </svg>
                     </div>
-                    <span className="upload-text">{fileName}</span>
-                    <span className="upload-limits">Click to change file</span>
-                  </>
+
+                    <div className="file-info">
+                      <div className="file-name-row">
+                        <svg
+                          className="file-icon"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                          <polyline points="14 2 14 8 20 8"></polyline>
+                        </svg>
+                        <span className="file-name" title={fileName}>
+                          {fileName}
+                        </span>
+                        <button
+                          type="button"
+                          className="remove-file-btn"
+                          onClick={handleRemoveFile}
+                          aria-label="Remove file"
+                        >
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                          </svg>
+                        </button>
+                      </div>
+                      <span className="success-message">
+                        Successfully uploaded
+                      </span>
+                    </div>
+                  </div>
                 )}
               </label>
               <input
@@ -347,11 +373,13 @@ const Home = () => {
               />
             </div>
           </div>
+        </div>
 
-          {/* Mobile Button */}
+        {/* --- SUBMIT BUTTON (below grid, full width area) --- */}
+        <div className="submit-row fade-in-up stagger-3">
           <button
             onClick={handleGenerateReport}
-            className="action-btn mobile-btn fade-in-up stagger-4"
+            className="action-btn"
             type="button"
           >
             <span className="btn-bg"></span>
@@ -359,7 +387,16 @@ const Home = () => {
               <svg className="btn-icon" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M8 5v14l11-7z" />
               </svg>
-              Initialize Strategy Session
+              Commence Simulation
+              <svg
+                className="btn-arrow"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M5 12h14M12 5l7 7-7 7"></path>
+              </svg>
             </span>
           </button>
         </div>
@@ -470,37 +507,10 @@ const Home = () => {
             stroke="currentColor"
             strokeWidth="2"
           >
-            <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
-            <path d="M2 17l10 5 10-5"></path>
-            <path d="M2 12l10 5 10-5"></path>
-          </svg>
-          <span>Prep</span>
-        </a>
-        <a href="#" className="mobile-nav-item">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
             <circle cx="12" cy="12" r="10"></circle>
             <polyline points="12 6 12 12 16 14"></polyline>
           </svg>
           <span>History</span>
-        </a>
-        <a href="#" className="mobile-nav-item">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-            <circle cx="9" cy="7" r="4"></circle>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-          </svg>
-          <span>Network</span>
         </a>
       </nav>
     </div>
