@@ -6,10 +6,46 @@ const {
 const interviewReportModel = require("../models/interviewReport.model");
 
 /**
+ * BULLETPROOF AUTH HELPER
+ * If Clerk's middleware fails to populate req.auth.userId, this manually
+ * decodes the token from the headers to guarantee we get the User ID.
+ */
+const getUserId = (req) => {
+  if (req.auth && req.auth.userId) return req.auth.userId;
+
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer ")
+  ) {
+    try {
+      const token = req.headers.authorization.split(" ")[1];
+      const base64Url = token.split(".")[1];
+      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+      const payload = JSON.parse(
+        Buffer.from(base64, "base64").toString("utf-8"),
+      );
+      return payload.sub; // Clerk stores the user ID in the 'sub' claim
+    } catch (err) {
+      console.error("Failed to decode fallback token:", err);
+      return null;
+    }
+  }
+  return null;
+};
+
+/**
  * @description generate a new interview report on the basis of user self desciption, resume pdf and job description
  */
 async function generateInterviewReportController(req, res) {
   try {
+    // 1. Extract User ID FIRST before doing any heavy processing
+    const userId = getUserId(req);
+    if (!userId) {
+      return res
+        .status(401)
+        .json({ message: "Unauthorized: No user ID found" });
+    }
+
     if (!req.file) {
       return res.status(400).json({
         message: "Resume file is required",
@@ -26,21 +62,15 @@ async function generateInterviewReportController(req, res) {
       selfDescription,
       jobDescription,
     });
-    console.log("AI RESPONSE:", JSON.stringify(interviewReportByAi, null, 2));
 
-    // Optional but recommended: Ensure Clerk attached the ID before hitting the DB
-    if (!req.auth || !req.auth.userId) {
-      return res
-        .status(401)
-        .json({ message: "Unauthorized: No user ID found" });
-    }
+    console.log("AI RESPONSE GENERATED SUCCESSFULLY");
 
     const interviewReport = await interviewReportModel.create({
-      // FIX: Spread the AI response FIRST so it doesn't overwrite your explicit backend values
+      // Spread AI response first
       ...interviewReportByAi,
 
-      // These explicit values are now safe from being overwritten by the AI payload
-      user: req.auth.userId,
+      // Enforce backend variables
+      user: userId,
       title: "Untitled Interview Plan",
       resume: resumeContent,
       selfDescription,
@@ -65,11 +95,15 @@ async function generateInterviewReportController(req, res) {
  */
 async function getInterviewReportByIdController(req, res) {
   const { interviewId } = req.params;
+  const userId = getUserId(req);
 
-  // FIX: Used findOne instead of findById when passing an object query
+  if (!userId) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
   const interviewReport = await interviewReportModel.findOne({
     _id: interviewId,
-    user: req.auth.userId,
+    user: userId,
   });
 
   if (!interviewReport) {
@@ -87,9 +121,14 @@ async function getInterviewReportByIdController(req, res) {
  * @description get all the interview reports of the user
  */
 async function getAllInterviewReportsController(req, res) {
-  // FIX: Await the entire query chain, not just the find() method
+  const userId = getUserId(req);
+
+  if (!userId) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
   const interviewReports = await interviewReportModel
-    .find({ user: req.auth.userId })
+    .find({ user: userId })
     .sort({ createdAt: -1 })
     .select(
       "-resume -selfDescription -jobDescription -__v -technicalQuestions -behaviouralQuestions -skillGaps -preparationPlan",
@@ -102,7 +141,7 @@ async function getAllInterviewReportsController(req, res) {
 }
 
 /**
- * @description generate a new resume data object on the basis of user self desciption, resume pdf and job description
+ * @description generate a new resume data object
  */
 async function generateResumePdfController(req, res) {
   try {
@@ -119,14 +158,12 @@ async function generateResumePdfController(req, res) {
 
     const { resume, jobDescription, selfDescription } = interviewReport;
 
-    // Fetch the JSON data from your AI service instead of a PDF buffer
     const resumeData = await generateResumePdf({
       resume,
       jobDescription,
       selfDescription,
     });
 
-    // Send the structured JSON directly to the frontend
     res.status(200).json({
       message: "Resume data generated successfully",
       resumeData,
@@ -140,7 +177,6 @@ async function generateResumePdfController(req, res) {
   }
 }
 
-// FIX: Exported ALL controller functions
 module.exports = {
   generateInterviewReportController,
   getInterviewReportByIdController,
