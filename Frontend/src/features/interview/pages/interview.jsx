@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../style/interview.scss";
 import { useInterview } from "../hooks/useInterview";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useParams } from "react-router-dom";
 
 const NAV_ITEMS = [
   {
@@ -9,9 +9,6 @@ const NAV_ITEMS = [
     label: "Technical Questions",
     icon: (
       <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="16"
-        height="16"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -29,9 +26,6 @@ const NAV_ITEMS = [
     label: "Behavioral Questions",
     icon: (
       <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="16"
-        height="16"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -45,12 +39,9 @@ const NAV_ITEMS = [
   },
   {
     id: "roadmap",
-    label: "Road Map",
+    label: "Roadmap",
     icon: (
       <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="16"
-        height="16"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -58,101 +49,217 @@ const NAV_ITEMS = [
         strokeLinecap="round"
         strokeLinejoin="round"
       >
-        <polygon points="3 11 22 2 13 21 11 13 3 11" />
+        <path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
       </svg>
     ),
   },
 ];
 
-// ── Sub-components ────────────────────────────────────────────────────────────
-const QuestionCard = ({ item, index }) => {
+// ── Question Card ────────────────────────────────────────────────────────────
+const QuestionCard = ({ item, index, index2Digit }) => {
   const [open, setOpen] = useState(false);
+  const tag = item.tag || item.category || item.topic || "QUESTION";
+
   return (
     <div className={`question-card ${open ? "open" : ""}`}>
+      <div className="q-card-shine"></div>
       <button className="question-header" onClick={() => setOpen(!open)}>
-        <span className="question-number">Q{index + 1}</span>
-        <h3>{item.question}</h3>
-        <span className="question-toggle">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            {open ? (
-              <polyline points="18 15 12 9 6 15" />
-            ) : (
+        <div className="q-top">
+          <span className="q-tag">
+            <span className="q-num">Q{index2Digit}</span>
+            <span className="q-dot">•</span>
+            <span className="q-cat">{tag}</span>
+          </span>
+          <span className={`q-toggle ${open ? "open" : ""}`}>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <polyline points="6 9 12 15 18 9" />
-            )}
-          </svg>
-        </span>
+            </svg>
+          </span>
+        </div>
+        <h3 className="q-title">{item.question}</h3>
       </button>
-      {open && (
-        <div className="question-details">
-          <div className="question-info">
-            <span className="detail-label">Intention</span>
+
+      <div className={`q-details ${open ? "open" : ""}`}>
+        <div className="q-details-inner">
+          <div className="q-info">
+            <span className="detail-label">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              Intention
+            </span>
             <p>{item.intention}</p>
           </div>
-          <div className="question-info answer">
-            <span className="detail-label">Model Answer</span>
+          <div className="q-info answer">
+            <span className="detail-label">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              Model Answer
+            </span>
             <p>{item.answer}</p>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };
 
-const RoadMapDay = ({ day }) => (
-  <div className="roadmap-card">
+// ── Roadmap Phase Card ───────────────────────────────────────────────────────
+const RoadMapDay = ({ day, index, total }) => (
+  <div className="roadmap-card" style={{ animationDelay: `${index * 0.08}s` }}>
+    <div className="roadmap-connector"></div>
     <div className="roadmap-day">
-      <span>DAY</span>
-      <strong>{day.day}</strong>
+      <div className="day-ring">
+        <span className="day-label">DAY</span>
+        <strong>{day.day}</strong>
+      </div>
     </div>
     <div className="roadmap-content">
+      <div className="roadmap-badge">
+        <span className="phase-dot"></span>
+        PHASE {index + 1} / {total}
+      </div>
       <h3>{day.focus}</h3>
       <ul>
         {day.tasks.map((task, i) => (
-          <li key={i}>{task}</li>
+          <li key={i}>
+            <span className="task-check">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </span>
+            {task}
+          </li>
         ))}
       </ul>
     </div>
   </div>
 );
 
-// ── Main Component ────────────────────────────────────────────────────────────
+// ── Main Component ───────────────────────────────────────────────────────────
 const Interview = () => {
   const [activeNav, setActiveNav] = useState("technical");
   const { report, getReportById, loading, getResumePdf } = useInterview();
   const { interviewId } = useParams();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    if (interviewId) {
-      getReportById(interviewId);
-    }
+    if (interviewId) getReportById(interviewId);
   }, [interviewId]);
 
   if (loading || !report) {
     return (
       <main className="loading-screen">
-        <h1>Loading your interview plan...</h1>
+        <div className="loader-orb">
+          <div className="orb-ring ring-1"></div>
+          <div className="orb-ring ring-2"></div>
+          <div className="orb-ring ring-3"></div>
+          <div className="orb-core"></div>
+        </div>
+        <h1 className="pulse-text">Loading Your Strategy Report</h1>
+        <p className="loading-subtext">
+          Assembling insights<span className="dots"></span>
+        </p>
       </main>
     );
   }
 
+  const behavioralList =
+    report.behaviouralQuestions || report.behavioralQuestions || [];
+
+  const skillGaps = report.skillGaps || [];
+
   return (
     <div className="interview-page">
-      <div className="interview-layout">
-        {/* ── Left Sidebar (Navigation & Score) ── */}
+      {/* Animated background */}
+      <div className="bg-layer">
+        <div className="grid-overlay"></div>
+        <div className="gradient-orb orb-1"></div>
+        <div className="gradient-orb orb-2"></div>
+      </div>
+
+      {/* Top Nav */}
+      <nav className="veritas-navbar fade-in-down">
+        <div className="nav-left">
+          <span className="brand-logo" onClick={() => navigate("/")}>
+            <span className="logo-mark">◆</span>
+            Veritas
+          </span>
+        </div>
+        <div className="nav-center">
+          <a onClick={() => navigate("/")} className="nav-link">
+            Dashboard
+          </a>
+          <a href="#" className="nav-link active">
+            History
+          </a>
+        </div>
+        <div className="nav-right">
+          <button className="icon-btn user-btn" aria-label="Profile">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </button>
+        </div>
+      </nav>
+
+      <div className="interview-layout fade-in-up">
+        {/* ── Left Sidebar ── */}
         <aside className="interview-sidebar">
+          <div className="brand-block">
+            <div className="brand-icon">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+              </svg>
+            </div>
+            <div>
+              <div className="brand-title">Strategy Engine</div>
+              <div className="brand-sub">HIGH-PERFORMANCE PREP</div>
+            </div>
+          </div>
+
           <div className="sidebar-heading">
-            <span className="sidebar-heading-icon">✦</span>
-            <span>Sections</span>
+            <span>NAVIGATION</span>
           </div>
 
           <nav className="interview-nav">
@@ -162,111 +269,173 @@ const Interview = () => {
                 className={activeNav === item.id ? "active" : ""}
                 onClick={() => setActiveNav(item.id)}
               >
-                <span className="nav-dot" />
-                {item.icon}
-                {item.label}
+                <span className="nav-indicator"></span>
+                <span className="nav-icon">{item.icon}</span>
+                <span className="nav-label">{item.label}</span>
               </button>
             ))}
 
             <button
               onClick={() => getResumePdf(report._id)}
-              style={{ marginTop: "15px", color: "var(--pink-light)" }}
+              className="resume-btn"
             >
-              <span
-                className="nav-dot"
-                style={{
-                  background: "var(--pink-light)",
-                  boxShadow: "0 0 8px rgba(255, 23, 104, 0.7)",
-                }}
-              />
-              <svg
-                height={"0.8rem"}
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-              >
-                <path d="M10.6144 17.7956 11.492 15.7854C12.2731 13.9966 13.6789 12.5726 15.4325 11.7942L17.8482 10.7219C18.6162 10.381 18.6162 9.26368 17.8482 8.92277L15.5079 7.88394C13.7092 7.08552 12.2782 5.60881 11.5105 3.75894L10.6215 1.61673C10.2916.821765 9.19319.821767 8.8633 1.61673L7.97427 3.75892C7.20657 5.60881 5.77553 7.08552 3.97685 7.88394L1.63658 8.92277C.868537 9.26368.868536 10.381 1.63658 10.7219L4.0523 11.7942C5.80589 12.5726 7.21171 13.9966 7.99275 15.7854L8.8704 17.7956C9.20776 18.5682 10.277 18.5682 10.6144 17.7956ZM19.4014 22.6899 19.6482 22.1242C20.0882 21.1156 20.8807 20.3125 21.8695 19.8732L22.6299 19.5353C23.0412 19.3526 23.0412 18.7549 22.6299 18.5722L21.9121 18.2532C20.8978 17.8026 20.0911 16.9698 19.6586 15.9269L19.4052 15.3156C19.2285 14.8896 18.6395 14.8896 18.4628 15.3156L18.2094 15.9269C17.777 16.9698 16.9703 17.8026 15.956 18.2532L15.2381 18.5722C14.8269 18.7549 14.8269 19.3526 15.2381 19.5353L15.9985 19.8732C16.9874 20.3125 17.7798 21.1156 18.2198 22.1242L18.4667 22.6899C18.6473 23.104 19.2207 23.104 19.4014 22.6899Z"></path>
-              </svg>
-              Download Resume
+              <span className="nav-indicator"></span>
+              <span className="nav-icon">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+              </span>
+              <span className="nav-label">Resume</span>
+              <span className="new-badge">PDF</span>
             </button>
           </nav>
 
-          <div className="sidebar-score">
-            <div className="score-heading">
-              <span>Match Score</span>
-              <strong>{report.matchScore}%</strong>
+          <div className="sidebar-footer">
+            <div className="sidebar-score">
+              <div className="score-heading">
+                <span>MATCH SCORE</span>
+                <strong>{report.matchScore}%</strong>
+              </div>
+              <div className="score-track">
+                <span style={{ width: `${report.matchScore}%` }} />
+              </div>
+              <p>Strong compatibility with target role.</p>
             </div>
-            <div className="score-track">
-              <span style={{ width: `${report.matchScore}%` }} />
-            </div>
-            <p>Strong match for this role based on your profile.</p>
+
+            <button className="upgrade-btn" onClick={() => navigate("/")}>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+              New Session
+            </button>
           </div>
         </aside>
 
         {/* ── Center Content ── */}
         <main className="interview-main">
+          {/* TECHNICAL */}
           {activeNav === "technical" && (
-            <section>
+            <section className="section-fade">
               <div className="content-header">
-                <span className="eyebrow">ASSESSMENT</span>
-                <h1>Technical Questions</h1>
-                <p>
-                  Review these core technical concepts tailored to your target
-                  role.
-                </p>
+                <div className="header-left">
+                  <span className="eyebrow">
+                    <span className="eye-dot"></span>
+                    ASSESSMENT MODULE
+                  </span>
+                  <h1>Technical Questions</h1>
+                  <p>
+                    High-probability technical scenarios based on current
+                    industry standards and role requirements.
+                  </p>
+                </div>
+                <div className="header-right">
+                  <div className="live-badge">
+                    <span className="live-pulse"></span>
+                    LIVE SYNC
+                  </div>
+                </div>
               </div>
               <div className="content-body">
-                <div className="questions-list">
+                <div className="questions-grid">
                   {report.technicalQuestions.map((q, i) => (
-                    <QuestionCard key={i} item={q} index={i} />
+                    <QuestionCard
+                      key={i}
+                      item={q}
+                      index={i}
+                      index2Digit={String(i + 1).padStart(2, "0")}
+                    />
                   ))}
                 </div>
               </div>
             </section>
           )}
 
+          {/* BEHAVIORAL */}
           {activeNav === "behavioral" && (
-            <section>
+            <section className="section-fade">
               <div className="content-header">
-                <span className="eyebrow">CULTURE FIT</span>
-                <h1>Behavioral Questions</h1>
-                <p>
-                  Prepare for situational questions to showcase your soft
-                  skills.
-                </p>
+                <div className="header-left">
+                  <span className="eyebrow">
+                    <span className="eye-dot"></span>
+                    CULTURE FIT ANALYSIS
+                  </span>
+                  <h1>Behavioral Questions</h1>
+                  <p>
+                    Analyze situational responses and soft-skill proficiency to
+                    showcase leadership potential.
+                  </p>
+                </div>
+                <div className="header-right">
+                  <div className="live-badge">
+                    <span className="live-pulse"></span>
+                    LIVE SYNC
+                  </div>
+                </div>
               </div>
               <div className="content-body">
-                <div className="questions-list">
-                  {/* 
-        Safely check for both spellings (British/American) just in case the AI 
-        formats it differently in future requests, and fall back to an empty array.
-      */}
-                  {(
-                    report.behaviouralQuestions ||
-                    report.behavioralQuestions ||
-                    []
-                  ).map((q, i) => (
-                    <QuestionCard key={i} item={q} index={i} />
+                <div className="questions-grid">
+                  {behavioralList.map((q, i) => (
+                    <QuestionCard
+                      key={i}
+                      item={q}
+                      index={i}
+                      index2Digit={String(i + 1).padStart(2, "0")}
+                    />
                   ))}
                 </div>
               </div>
             </section>
           )}
 
+          {/* ROADMAP */}
           {activeNav === "roadmap" && (
-            <section>
+            <section className="section-fade">
               <div className="content-header">
-                <span className="eyebrow">STRATEGY</span>
-                <h1>Preparation Road Map</h1>
-                <p>
-                  Your step-by-step {report.preparationPlan.length}-day guide to
-                  acing the interview.
-                </p>
+                <div className="header-left">
+                  <span className="eyebrow">
+                    <span className="eye-dot"></span>
+                    STRATEGIC ROADMAP
+                  </span>
+                  <h1>Preparation Roadmap</h1>
+                  <p>
+                    Your {report.preparationPlan.length}-day step-by-step guide
+                    to systematic interview mastery.
+                  </p>
+                </div>
+                <div className="header-right">
+                  <div className="live-badge">
+                    <span className="live-pulse"></span>
+                    {report.preparationPlan.length} PHASES
+                  </div>
+                </div>
               </div>
               <div className="content-body">
                 <div className="roadmap-list">
-                  {report.preparationPlan.map((day) => (
-                    <RoadMapDay key={day.day} day={day} />
+                  <div className="roadmap-timeline"></div>
+                  {report.preparationPlan.map((day, i) => (
+                    <RoadMapDay
+                      key={day.day}
+                      day={day}
+                      index={i}
+                      total={report.preparationPlan.length}
+                    />
                   ))}
                 </div>
               </div>
@@ -274,33 +443,92 @@ const Interview = () => {
           )}
         </main>
 
-        {/* ── Right Sidebar (Skills) ── */}
+        {/* ── Right Sidebar ── */}
         <aside className="skill-sidebar">
+          {/* Aggregate Match Score */}
+          <div className="aggregate-panel">
+            <div className="agg-label">AGGREGATE MATCH SCORE</div>
+            <div className="agg-circle-wrap">
+              <svg className="agg-circle" viewBox="0 0 120 120">
+                <circle
+                  className="agg-track"
+                  cx="60"
+                  cy="60"
+                  r="52"
+                  fill="none"
+                />
+                <circle
+                  className="agg-progress"
+                  cx="60"
+                  cy="60"
+                  r="52"
+                  fill="none"
+                  style={{
+                    strokeDasharray: 326.7,
+                    strokeDashoffset: 326.7 - (326.7 * report.matchScore) / 100,
+                  }}
+                />
+              </svg>
+              <div className="agg-value">
+                <span className="agg-num">{report.matchScore}</span>
+                <span className="agg-pct">%</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Skill Gaps */}
           <div className="skill-header">
-            <span className="skill-icon">⚠</span>
+            <div className="skill-icon">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+            </div>
             <div>
               <h2>Skill Gaps</h2>
-              <p>Areas to focus on</p>
+              <p>Priority focus areas</p>
             </div>
           </div>
 
           <div className="skill-list">
-            {report.skillGaps.map((gap, i) => (
+            {skillGaps.map((gap, i) => (
               <div
                 key={i}
                 className={`skill-item ${gap.severity.toLowerCase()}`}
+                style={{ animationDelay: `${i * 0.06}s` }}
               >
-                <span className="skill-name">{gap.skill}</span>
+                <div className="skill-bar-fill"></div>
+                <div className="skill-info">
+                  <span className="skill-name">{gap.skill}</span>
+                  {gap.description && (
+                    <span className="skill-desc">{gap.description}</span>
+                  )}
+                </div>
                 <span className="severity">{gap.severity}</span>
               </div>
             ))}
           </div>
 
           <div className="skill-tip">
-            <span>i</span>
+            <span className="tip-icon">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M9.663 17h4.673M12 3v1M22 12h-1M4 12H3M18.364 5.636l-.707.707M6.343 17.657l-.707.707M18.364 18.364l-.707-.707M6.343 6.343l-.707-.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+              </svg>
+            </span>
             <p>
-              <strong>Pro Tip:</strong> Focus on high severity gaps first to
-              maximize your interview success rate.
+              <strong>Pro Tip:</strong> Focus on <b>HIGH</b> severity gaps first
+              to maximize interview conversion probability.
             </p>
           </div>
         </aside>
