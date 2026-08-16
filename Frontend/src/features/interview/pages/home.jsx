@@ -1,27 +1,23 @@
-import React, {useState, useRef} from "react";
+import React, { useState, useRef } from "react";
 import "../style/home.scss";
-import {useInterview} from "../hooks/useInterview"
+import { useInterview } from "../hooks/useInterview";
 import { useNavigate } from "react-router-dom";
 
 const Home = () => {
   const { loading, generateReport, reports } = useInterview();
   const [jobDescription, setJobDescription] = useState("");
   const [selfDescription, setSelfDescription] = useState("");
-  //const [resume, setResume] = useState(null)
   const resumeInputRef = useRef();
   const navigate = useNavigate();
 
-
-
   const handleGenerateReport = async () => {
-    const resumeFile = resumeInputRef.current.files[0];
+    const resumeFile = resumeInputRef.current?.files[0];
     const data = await generateReport({
       jobDescription,
       selfDescription,
       resumeFile,
     });
 
-    // FIX: Use '_id' because MongoDB documents default to '_id'
     if (data?._id) {
       navigate(`/interview/${data._id}`);
     }
@@ -30,174 +26,148 @@ const Home = () => {
   if (loading) {
     return (
       <main className="loading-screen">
-        <h1>Generating your interview plan...</h1>
+        <div className="loader"></div>
+        <h1>Initializing strategic algorithms...</h1>
       </main>
     );
   }
 
   return (
-    <main className="home">
-      <div className="home-header">
-        <h1>
-          Create Your Custom <span>Interview Plan</span>
-        </h1>
-
+    <main className="veritas-home">
+      {/* HEADER */}
+      <header className="page-header">
+        <h1>Define Your Target</h1>
         <p>
-          Let our AI analyze the job requirements and your unique profile to
-          build a winning strategy.
+          Initialize strategic preparation algorithms. Calibrate assets against
+          market demands to maximize conversion probability.
         </p>
-      </div>
-      <div className="interview-card">
-        <div className="interview-input-group">
-          {/* LEFT SIDE */}
-          <div className="left">
-            <div className="section-header">
-              <div className="section-title">
-                <span className="icon">▣</span>
-                <label htmlFor="jobDescription">Target Job Description</label>
-              </div>
+      </header>
 
-              <span className="tag">REQUIRED</span>
+      {/* MAIN GRID */}
+      <div className="strategy-grid">
+        {/* LEFT COLUMN */}
+        <div className="grid-left">
+          <div className="panel">
+            <div className="panel-header">
+              <span className="icon-cyan">⊚</span>
+              <h2>Target Job Description</h2>
             </div>
-
-            <div className="job-description-wrapper">
+            <p className="panel-subtitle">
+              Input detailed role specifications, primary responsibilities, and
+              technical requirements.
+            </p>
+            <div className="input-wrapper">
               <textarea
-                onChange={(e) => {
-                  setJobDescription(e.target.value);
-                }}
+                onChange={(e) => setJobDescription(e.target.value)}
                 id="jobDescription"
-                name="jobDescription"
-                maxLength={5000}
-                placeholder={`Paste the full job description here...
-e.g. "Senior Frontend Engineer at Google requires
-proficiency in React, TypeScript, and large-scale system
-design..."`}
+                placeholder="Paste job description here..."
               />
-
-              <span className="character-count">0 / 5000 chars</span>
             </div>
           </div>
 
-          {/* RIGHT SIDE */}
-          <div className="right">
-            <div className="section-header profile-header">
-              <div className="section-title">
-                <span className="icon profile-icon">♙</span>
-                <p>Your Profile</p>
-              </div>
-            </div>
-
-            {/* RESUME */}
-            <div className="input-group resume-group">
-              <div className="input-title">
-                <label htmlFor="resume">Upload Resume</label>
-                <span className="tag">BEST RESULTS</span>
-              </div>
-
-              <label className="file-label" htmlFor="resume">
-                <span className="upload-icon">↑</span>
-
-                <span className="upload-title">
-                  Click to upload or drag &amp; drop
-                </span>
-
-                <span className="upload-subtitle">PDF or DOCX (Max 5MB)</span>
-              </label>
-
-              <input
-                ref={resumeInputRef}
-                hidden
-                type="file"
-                id="resume"
-                name="resume"
-                accept=".pdf,.doc,.docx"
-              />
-            </div>
-
-            {/* DIVIDER */}
-            <div className="divider">
-              <span></span>
-              <p>OR</p>
-              <span></span>
-            </div>
-
-            {/* SELF DESCRIPTION */}
-            <div className="input-group self-description-group">
-              <label htmlFor="selfDescription">Quick Self-Description</label>
-
-              <textarea
-                onChange={(e) => {
-                  setSelfDescription(e.target.value);
-                }}
-                name="selfDescription"
-                id="selfDescription"
-                placeholder="Briefly describe your experience, key skills, and years of experience if you don't have a resume handy..."
-              />
-            </div>
-
-            {/* INFO */}
-            <div className="info-box">
-              <span className="info-icon">i</span>
-
-              <p>
-                Either a <strong>Resume</strong> or a{" "}
-                <strong>Self Description</strong> is required to generate a
-                personalized plan.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* BOTTOM BAR */}
-        <div className="card-footer">
-          <p>AI-Powered Strategy Generation · Approx 30s</p>
-
+          {/* Desktop Button */}
           <button
             onClick={handleGenerateReport}
-            className="generate-button"
+            className="action-btn desktop-btn"
             type="button"
           >
-            <span>★</span>
-            Generate My Interview Strategy
+            <span className="btn-icon">▷</span> Commence Simulation
           </button>
         </div>
+
+        {/* RIGHT COLUMN */}
+        <div className="grid-right">
+          <div className="panel">
+            <div className="panel-header">
+              <span className="icon-cyan">♙</span>
+              <h2>Quick Self-Description</h2>
+            </div>
+            <p className="panel-subtitle">
+              Briefly describe your core expertise, career objectives, and key
+              achievements.
+            </p>
+            <div className="input-wrapper">
+              <textarea
+                onChange={(e) => setSelfDescription(e.target.value)}
+                id="selfDescription"
+                className="small-textarea"
+                placeholder="Describe your experience here..."
+              />
+            </div>
+          </div>
+
+          <div className="panel">
+            <div className="panel-header">
+              <span className="icon-cyan">⊟</span>
+              <h2>Current Assets</h2>
+            </div>
+            <p className="panel-subtitle">
+              Upload your latest curriculum vitae or supporting documentation
+              for architectural review.
+            </p>
+            <label className="file-upload-zone" htmlFor="resume">
+              <span className="upload-icon">📄</span>
+              <span className="upload-text">
+                Drag and drop files or click to browse
+              </span>
+              <span className="upload-limits">PDF, DOCX (Max 5MB)</span>
+            </label>
+            <input
+              ref={resumeInputRef}
+              hidden
+              type="file"
+              id="resume"
+              accept=".pdf,.doc,.docx"
+            />
+          </div>
+        </div>
+
+        {/* Mobile Button */}
+        <button
+          onClick={handleGenerateReport}
+          className="action-btn mobile-btn"
+          type="button"
+        >
+          <span className="btn-icon">⚡</span> Initialize Strategy Session
+        </button>
       </div>
-     
-      {reports.length > 0 && (
-        <section className="recent-reports">
-          <h2>Recent Reports</h2>
-          <ul className="reports-list">
+
+      {/* RECENT SESSIONS */}
+      {reports && reports.length > 0 && (
+        <section className="recent-sessions">
+          <div className="sessions-header">
+            <h3>
+              <span className="icon-cyan">◷</span> Recent Sessions
+            </h3>
+          </div>
+          <div className="sessions-grid">
             {reports.map((report) => (
-              <li
-                // FIX 1: Change 'id' to '_id' for the unique key
+              <div
                 key={report._id}
-                className="report-item"
-                // FIX 2: Change 'id' to '_id' for the navigation route
+                className="session-card"
                 onClick={() => navigate(`/interview/${report._id}`)}
               >
-                {/* FIX 3: Change 'reports.title' (the array) to 'report.title' (the individual object) */}
-                <h3>{report.title || "Untitled Position"}</h3>
-
-                <p className="report-meta">
-                  Generated on {new Date(report.createdAt).toLocaleDateString()}
-                </p>
-                <p
-                  className={`match-score ${report.matchScore >= 80 ? "score--high" : report.matchScore >= 60 ? "score--mid" : "score--low"}`}
-                >
-                  {report.matchScore}%
-                </p>
-              </li>
+                <div className="session-info">
+                  <h4>{report.title || "Untitled Position"}</h4>
+                  <p className="session-meta">
+                    <span className="date-icon">📅</span>{" "}
+                    {new Date(report.createdAt).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </p>
+                </div>
+                <div className="session-score">
+                  <span className="score-pill">{report.matchScore}% Match</span>
+                </div>
+              </div>
             ))}
-          </ul>
+          </div>
         </section>
       )}
-      <div className="home-footer">
-        <a href="/">Privacy Policy</a>
-        <a href="/">Terms of Service</a>
-        <a href="/">Help Center</a>
-      </div>
     </main>
   );
-};;
+};
 
 export default Home;
