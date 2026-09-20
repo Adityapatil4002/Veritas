@@ -1,10 +1,12 @@
-import { createContext, useState } from "react";
+import { createContext, useState, useContext } from "react";
 import { useSignIn, useSignUp, useUser } from "@clerk/clerk-react";
 
 export const AuthContext = createContext();
 
+// Add this export so your pages can consume the context
+export const useAuth = () => useContext(AuthContext);
+
 export const AuthProvider = ({ children }) => {
-  // Pull in Clerk's hooks to manage the actual authentication state
   const { user, isLoaded: isUserLoaded } = useUser();
   const {
     isLoaded: isSignInLoaded,
@@ -19,7 +21,6 @@ export const AuthProvider = ({ children }) => {
 
   const [customLoading, setCustomLoading] = useState(false);
 
-  // Global loading state waits for Clerk to initialize + any active form submission
   const loading =
     !isUserLoaded || !isSignInLoaded || !isSignUpLoaded || customLoading;
 
@@ -34,10 +35,9 @@ export const AuthProvider = ({ children }) => {
       });
 
       if (result.status === "complete") {
-        // This activates the Clerk session, which will populate the 'user' object and trigger your Protected routes
         await setSignInActive({ session: result.createdSessionId });
       } else {
-        throw new Error("Additional login steps required (e.g., 2FA).");
+        throw new Error("Additional login steps required.");
       }
     } catch (error) {
       console.error("Clerk login error:", error);
@@ -55,14 +55,12 @@ export const AuthProvider = ({ children }) => {
       const result = await signUp.create({
         emailAddress: email,
         password,
-        username, // Make sure "Username" is enabled in your Clerk Dashboard settings
+        username,
       });
 
       if (result.status === "complete") {
         await setSignUpActive({ session: result.createdSessionId });
       } else {
-        // If your Clerk settings enforce email verification, the status will be "missing_requirements".
-        // You would handle sending an OTP code here if needed.
         console.warn("User requires further verification:", result);
       }
     } catch (error) {
